@@ -2,6 +2,11 @@ import express from "express";
 import { configDotenv } from "dotenv";
 import DB_CON from "./src/db/connection.js";
 import authRoute from "./src/routes/userRoutes.js";
+import hrRoutes from "./src/routes/hr.js";
+
+
+import jobApplicationRoutes from "./src/routes/jobSeeker.js";
+
 import cors from "cors";  
 
 configDotenv();
@@ -15,11 +20,17 @@ app.use(cors({
     credentials: true,
 }));
 
-app.use("/api/auth", authRoute);
 
 app.get("/", (req, res) => {
     res.send("Server Working");
 });
+
+
+app.use("/api/auth", authRoute);
+app.use("/api/hr", hrRoutes);
+app.use("/api/applications", jobApplicationRoutes);
+
+
 
 async function startServer() {
     await DB_CON();
