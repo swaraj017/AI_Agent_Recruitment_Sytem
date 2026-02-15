@@ -39,7 +39,7 @@ export const scoreResume = (resumeText, jobDescription) => {
     text.includes("engineering") ||
     text.includes("computer science") ||
     text.includes("artificial intelligence")
-  ) {
+  ) {  
     score += 20;
   }
 

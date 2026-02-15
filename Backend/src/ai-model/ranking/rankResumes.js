@@ -6,5 +6,5 @@ export const rankResumes = (resumes, jobDescription) => {
       ...resume,
       score: scoreResume(resume.text, jobDescription),
     }))
-    .sort((a, b) => b.score - a.score);
+    .sort((a, b) => b.score - a.score); 
 };
