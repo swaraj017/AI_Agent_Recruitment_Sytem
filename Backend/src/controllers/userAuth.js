@@ -9,12 +9,15 @@ const register = async (req, res) => {
   try {
     const { email, password, role, fullName, companyName } = req.body;
 
+    console.log("Registration request body:", req.body);
     const existingUser = await AuthUser.findOne({ email });
+    console.log("Existing user check:", existingUser);
     if (existingUser) return res.status(400).json({ message: "User already exists" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    const authUser = await AuthUser.create({ email, password: hashedPassword, role });
+  
+    const authUser = await AuthUser.create({ username: fullName, email, password: hashedPassword, role });
+    console.log("Created AuthUser:", authUser);
 
     if (role === "hr") await HR.create({ authUserId: authUser._id, companyName });
     if (role === "job_seeker") await JobSeeker.create({ authUserId: authUser._id, fullName });
@@ -27,6 +30,7 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   try {
+
     const { email, password } = req.body;
 
     const user = await AuthUser.findOne({ email });
