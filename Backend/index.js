@@ -3,7 +3,7 @@ import { configDotenv } from "dotenv";
 import DB_CON from "./src/db/connection.js";
 import authRoute from "./src/routes/userRoutes.js";
 import hrRoutes from "./src/routes/hr.js";
-
+import resumeRoutes from "./src/routes/resumeRoutes.js"
 
 import jobApplicationRoutes from "./src/routes/jobSeeker.js";
 
@@ -29,7 +29,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoute);
 app.use("/api/hr", hrRoutes);
 app.use("/api/applications", jobApplicationRoutes);
-
+app.use("/api/resume",resumeRoutes);
 
 
 async function startServer() {

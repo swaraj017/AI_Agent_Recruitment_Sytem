@@ -55,6 +55,11 @@ const atsProfileSchema = new mongoose.Schema(
       type: String,
       maxlength: 1000, // short, model-ready
     },
+    parsedResumeId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "ParsedResume",
+},
+
 
     // --- TRACEABILITY ---
     parsedBy: {
@@ -66,6 +71,7 @@ const atsProfileSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+
   },
   { timestamps: true }
 );
