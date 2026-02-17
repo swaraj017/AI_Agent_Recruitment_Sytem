@@ -15,9 +15,9 @@ const CandidateCard = ({ candidate, onViewProfile, onShortlist, onReject }) => {
   } = candidate;
 
   const getScoreColor = (score) => {
-    if (score >= 80) return "text-green-600 bg-green-50";
-    if (score >= 60) return "text-yellow-600 bg-yellow-50";
-    return "text-red-600 bg-red-50";
+    if (score >= 80) return "text-emerald-700 bg-emerald-50 border-emerald-200";
+    if (score >= 60) return "text-amber-700 bg-amber-50 border-amber-200";
+    return "text-red-700 bg-red-50 border-red-200";
   };
 
   const statusVariants = {
@@ -29,63 +29,63 @@ const CandidateCard = ({ candidate, onViewProfile, onShortlist, onReject }) => {
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <div className="flex items-start gap-4">
+    <Card>
+      <div className="flex items-start gap-3">
         {/* Avatar */}
-        <div className="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center flex-shrink-0">
-          <span className="text-secondary font-semibold text-lg">
+        <div className="w-9 h-9 rounded-md bg-foreground flex items-center justify-center flex-shrink-0">
+          <span className="text-background font-medium text-sm">
             {name?.charAt(0)?.toUpperCase()}
           </span>
         </div>
 
         {/* Info */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h4 className="font-semibold text-gray-900">{name}</h4>
+          <div className="flex items-center gap-2 mb-0.5">
+            <h4 className="font-medium text-foreground text-sm">{name}</h4>
             <Badge
               variant={statusVariants[status]}
-              className="capitalize text-[10px]"
+              className="capitalize"
             >
               {status}
             </Badge>
           </div>
-          <p className="text-sm text-gray-500 mb-2">{email}</p>
+          <p className="text-xs text-muted-foreground mb-2">{email}</p>
 
           {/* Skills */}
           <div className="flex flex-wrap gap-1 mb-2">
-            {matchedSkills.slice(0, 4).map((skill, index) => (
+            {matchedSkills.slice(0, 3).map((skill, index) => (
               <Badge key={index} variant="outline" className="text-[10px]">
                 {skill}
               </Badge>
             ))}
-            {matchedSkills.length > 4 && (
+            {matchedSkills.length > 3 && (
               <Badge variant="outline" className="text-[10px]">
-                +{matchedSkills.length - 4} more
+                +{matchedSkills.length - 3}
               </Badge>
             )}
           </div>
 
-          <p className="text-xs text-gray-400">
-            {experience} exp • {education} • Applied {appliedAt}
+          <p className="text-xs text-muted-foreground">
+            {experience} · {education}
           </p>
         </div>
 
         {/* ATS Score */}
-        <div className={`px-3 py-2 rounded-xl ${getScoreColor(atsScore)}`}>
-          <p className="text-2xl font-bold">{atsScore}%</p>
+        <div className={`px-2.5 py-1.5 rounded-md border ${getScoreColor(atsScore)}`}>
+          <p className="text-lg font-semibold">{atsScore}%</p>
           <p className="text-[10px] uppercase tracking-wide">Match</p>
         </div>
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100">
+      <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border">
         <Button
           size="sm"
           variant="outline"
           onClick={onViewProfile}
           className="flex-1"
         >
-          View Profile
+          Profile
         </Button>
         {status === "pending" || status === "reviewed" ? (
           <>

@@ -1,8 +1,57 @@
 import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Button } from "../common";
 
-const Sidebar = ({ navItems = [] }) => {
+// Default icons for nav items
+const defaultIcons = {
+  Dashboard: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+    </svg>
+  ),
+  "Post Job": (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+    </svg>
+  ),
+  "My Jobs": (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+    </svg>
+  ),
+  "Job Board": (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+    </svg>
+  ),
+  "My Applications": (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+  ),
+  "My Profile": (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+    </svg>
+  ),
+  Candidates: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+  ),
+  Interviews: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    </svg>
+  ),
+  Settings: (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+  ),
+};
+
+const Sidebar = ({ navItems = [], isOpen, onToggle }) => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -11,86 +60,101 @@ const Sidebar = ({ navItems = [] }) => {
     navigate("/signin");
   };
 
+  // Get icon for nav item
+  const getIcon = (item) => item.icon || defaultIcons[item.label] || defaultIcons.Dashboard;
+
   return (
-    <aside className="w-64 h-screen bg-white border-r border-gray-100 flex flex-col fixed left-0 top-0">
-      {/* Logo */}
-      <div className="p-6">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-secondary/10 rounded-lg flex items-center justify-center">
-            <svg className="w-5 h-5 text-secondary" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-            </svg>
-          </div>
-          <span className="text-lg font-bold text-gray-900">RecruitAI</span>
-        </div>
-      </div>
+    <>
+      {/* Overlay for mobile */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden"
+          onClick={onToggle}
+        />
+      )}
 
-      {/* Navigation */}
-      <nav className="flex-1 px-4 space-y-1">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                isActive
-                  ? "bg-secondary text-white shadow-lg shadow-secondary/30"
-                  : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
-              }`
-            }
-          >
-            {item.icon}
-            {item.label}
-          </NavLink>
-        ))}
-      </nav>
-
-      {/* Upgrade Card */}
-      <div className="p-4">
-        <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-2xl p-5 relative overflow-hidden">
-          {/* Illustration */}
-          <div className="mb-4">
-            <div className="w-16 h-16 relative">
-              <svg viewBox="0 0 64 64" className="w-full h-full">
-                <circle cx="32" cy="48" rx="20" ry="8" fill="#E8E8F0"/>
-                <rect x="20" y="20" width="24" height="30" rx="2" fill="#F5F5FA" stroke="#DDD" strokeWidth="1"/>
-                <rect x="24" y="24" width="16" height="3" rx="1" fill="#B8B8D0"/>
-                <rect x="24" y="30" width="12" height="2" rx="1" fill="#D8D8E8"/>
-                <rect x="24" y="35" width="14" height="2" rx="1" fill="#D8D8E8"/>
-                <circle cx="44" cy="18" r="8" fill="#774FE6"/>
-                <path d="M41 18l2 2 4-4" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round"/>
-              </svg>
+      <aside
+        className={`fixed left-0 top-0 h-screen bg-card border-r border-border flex flex-col z-50 transition-all duration-200 ${
+          isOpen ? "w-56 translate-x-0" : "w-56 -translate-x-full lg:translate-x-0 lg:w-16"
+        }`}
+      >
+        {/* Logo / Hamburger */}
+        <div className="h-14 flex items-center justify-center px-3 border-b border-border">
+          {isOpen ? (
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center">
+                  <span className="text-background font-bold text-sm">R</span>
+                </div>
+                <span className="font-semibold text-foreground">Recruit</span>
+              </div>
+              {/* Close button - visible on all screens when open */}
+              <button
+                onClick={onToggle}
+                className="p-1.5 rounded-md hover:bg-muted text-muted-foreground"
+                title="Close menu"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                </svg>
+              </button>
             </div>
-          </div>
-          
-          <h3 className="font-semibold text-gray-900 text-sm">Get Upgrade</h3>
-          <p className="text-xs text-gray-500 mt-1 mb-4">
-            Step to the next level, with more features
-          </p>
-          <Button size="sm" className="w-full">
-            Learn more
-          </Button>
+          ) : (
+            <button
+              onClick={onToggle}
+              className="hidden lg:flex p-2 rounded-md hover:bg-muted text-muted-foreground"
+              title="Open menu"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          )}
         </div>
-      </div>
 
-      {/* Logout */}
-      <div className="p-4 border-t border-gray-100">
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 w-full transition-all"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-            />
-          </svg>
-          Logout
-        </button>
-      </div>
-    </aside>
+        {/* Navigation */}
+        <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto scrollbar-hide">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
+                  isActive
+                    ? "bg-foreground text-background"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                } ${!isOpen ? "lg:justify-center lg:px-0 lg:mx-1" : ""}`
+              }
+              title={!isOpen ? item.label : undefined}
+            >
+              <span className="flex-shrink-0">{getIcon(item)}</span>
+              <span className={`whitespace-nowrap ${!isOpen ? "lg:hidden" : ""}`}>
+                {item.label}
+              </span>
+            </NavLink>
+          ))}
+        </nav>
+
+        {/* Footer */}
+        <div className="p-2 border-t border-border">
+          <button
+            onClick={handleLogout}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground w-full transition-colors ${!isOpen ? "lg:justify-center lg:px-0 lg:mx-1" : ""}`}
+            title={!isOpen ? "Logout" : undefined}
+          >
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+              />
+            </svg>
+            <span className={`whitespace-nowrap ${!isOpen ? "lg:hidden" : ""}`}>Logout</span>
+          </button>
+        </div>
+      </aside>
+    </>
   );
 };
 

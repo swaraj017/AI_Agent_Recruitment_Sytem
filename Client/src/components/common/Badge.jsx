@@ -1,13 +1,13 @@
 import React from "react";
 
 const variants = {
-  default: "bg-gray-100 text-gray-600",
-  primary: "bg-secondary/10 text-secondary",
-  success: "bg-green-100 text-green-700",
-  warning: "bg-yellow-100 text-yellow-700",
-  danger: "bg-red-100 text-red-700",
-  info: "bg-blue-100 text-blue-700",
-  outline: "bg-white border border-gray-200 text-gray-600",
+  default: "bg-muted text-muted-foreground",
+  primary: "bg-foreground text-background",
+  success: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  warning: "bg-amber-50 text-amber-700 border border-amber-200",
+  danger: "bg-red-50 text-red-700 border border-red-200",
+  info: "bg-blue-50 text-blue-700 border border-blue-200",
+  outline: "bg-transparent border border-border text-foreground",
 };
 
 const Badge = ({
@@ -20,7 +20,7 @@ const Badge = ({
   return (
     <span
       className={`
-        inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium
+        inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium
         ${variants[variant]}
         ${className}
       `}

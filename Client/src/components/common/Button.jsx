@@ -1,16 +1,18 @@
 import React from "react";
 
 const variants = {
-  primary: "bg-secondary text-white hover:bg-secondary/90",
-  outline: "border border-gray-200 text-gray-700 hover:bg-gray-50",
-  ghost: "text-gray-600 hover:bg-gray-100",
+  primary: "bg-foreground text-background hover:bg-foreground/90",
+  secondary: "bg-muted text-foreground hover:bg-muted/80",
+  outline: "border border-border text-foreground hover:bg-muted",
+  ghost: "text-foreground hover:bg-muted",
   danger: "bg-red-500 text-white hover:bg-red-600",
+  brand: "bg-brand text-white hover:bg-brand/90",
 };
 
 const sizes = {
-  sm: "px-3 py-1.5 text-xs",
-  md: "px-4 py-2 text-sm",
-  lg: "px-6 py-2.5 text-sm",
+  sm: "h-8 px-3 text-xs",
+  md: "h-9 px-4 text-sm",
+  lg: "h-10 px-5 text-sm",
 };
 
 const Button = ({
@@ -29,7 +31,7 @@ const Button = ({
       className={`
         ${variants[variant]}
         ${sizes[size]}
-        rounded-lg font-medium transition-all
+        rounded-md font-medium transition-colors
         disabled:opacity-50 disabled:cursor-not-allowed
         inline-flex items-center justify-center gap-2
         ${className}

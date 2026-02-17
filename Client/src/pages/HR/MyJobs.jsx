@@ -2,65 +2,7 @@ import React, { useState } from "react";
 import { Sidebar, Header } from "../../components/layout";
 import { Card, Badge, Button, Input } from "../../components/common";
 import { HRJobCard, CandidateCard, StatsCard } from "../../components/job";
-
-// Navigation items for HR
-const navItems = [
-  {
-    path: "/hr/dashboard",
-    label: "Dashboard",
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-      </svg>
-    ),
-  },
-  {
-    path: "/hr/post-job",
-    label: "Post Job",
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
-      </svg>
-    ),
-  },
-  {
-    path: "/hr/my-jobs",
-    label: "My Jobs",
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-      </svg>
-    ),
-  },
-  {
-    path: "/hr/candidates",
-    label: "Candidates",
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-      </svg>
-    ),
-  },
-  {
-    path: "/hr/interviews",
-    label: "Interviews",
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-      </svg>
-    ),
-  },
-  {
-    path: "/hr/settings",
-    label: "Settings",
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-    ),
-  },
-];
+import { hrNavItems } from "./hrNavItems";
 
 // Mock jobs with detailed data
 const mockJobs = [
@@ -219,6 +161,7 @@ const mockJobs = [
 ];
 
 const MyJobs = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("active");
   const [selectedJob, setSelectedJob] = useState(null);
   const [viewMode, setViewMode] = useState("list"); // list, detail, results
@@ -271,11 +214,11 @@ const MyJobs = () => {
     ?.slice(0, 5) || [];
 
   return (
-    <div className="h-screen flex bg-gray-50/50">
-      <Sidebar navItems={navItems} />
+    <div className="h-screen flex bg-background">
+      <Sidebar navItems={hrNavItems} isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
 
-      <div className="flex-1 flex flex-col ml-64">
-        <Header user={user} />
+      <div className={`flex-1 flex flex-col transition-all duration-200 ${sidebarOpen ? 'lg:ml-56' : 'lg:ml-16'}`}>
+        <Header user={user} onMenuClick={() => setSidebarOpen(!sidebarOpen)} sidebarOpen={sidebarOpen} />
 
         <main className="flex-1 overflow-hidden p-6">
           <div className="h-full flex flex-col">
@@ -285,20 +228,20 @@ const MyJobs = () => {
                 {viewMode !== "list" && (
                   <button
                     onClick={handleBack}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="p-2 hover:bg-muted rounded-lg transition-colors"
                   >
-                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                   </button>
                 )}
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">
+                  <h1 className="text-xl font-semibold text-foreground">
                     {viewMode === "list" && "My Jobs"}
                     {viewMode === "detail" && selectedJob?.title}
                     {viewMode === "results" && `Results: ${selectedJob?.title}`}
                   </h1>
-                  <p className="text-gray-500 text-sm">
+                  <p className="text-muted-foreground text-sm">
                     {viewMode === "list" && "Manage your job postings and view candidates"}
                     {viewMode === "detail" && `${selectedJob?.location} • ${selectedJob?.type}`}
                     {viewMode === "results" && "Interview scores and recommendations"}
@@ -337,13 +280,13 @@ const MyJobs = () => {
               <>
                 {/* Tabs */}
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="flex bg-gray-100 rounded-lg p-1">
+                  <div className="flex bg-muted rounded-lg p-1">
                     <button
                       onClick={() => setActiveTab("active")}
                       className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
                         activeTab === "active"
-                          ? "bg-white text-gray-900 shadow-sm"
-                          : "text-gray-500 hover:text-gray-700"
+                          ? "bg-card text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
                       Active Jobs ({activeJobs.length})
@@ -352,8 +295,8 @@ const MyJobs = () => {
                       onClick={() => setActiveTab("closed")}
                       className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
                         activeTab === "closed"
-                          ? "bg-white text-gray-900 shadow-sm"
-                          : "text-gray-500 hover:text-gray-700"
+                          ? "bg-card text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
                       Closed Jobs ({closedJobs.length})
@@ -367,37 +310,37 @@ const MyJobs = () => {
                     {displayedJobs.map((job) => (
                       <Card
                         key={job.id}
-                        className="cursor-pointer hover:shadow-lg transition-all hover:border-secondary/30"
+                        className="cursor-pointer hover:shadow-lg transition-all hover:border-foreground/30"
                         onClick={() => handleJobClick(job)}
                       >
                         <div className="flex items-start justify-between mb-3">
                           <div>
-                            <h3 className="font-semibold text-gray-900">{job.title}</h3>
-                            <p className="text-sm text-gray-500">{job.location} • {job.type}</p>
+                            <h3 className="font-semibold text-foreground">{job.title}</h3>
+                            <p className="text-sm text-muted-foreground">{job.location} • {job.type}</p>
                           </div>
                           <Badge variant={job.status === "active" ? "success" : "outline"}>
                             {job.status}
                           </Badge>
                         </div>
 
-                        <p className="text-sm text-gray-600 mb-4">{job.salary}</p>
+                        <p className="text-sm text-muted-foreground mb-4">{job.salary}</p>
 
                         {/* Stats */}
                         <div className="grid grid-cols-4 gap-2 mb-4">
-                          <div className="text-center p-2 bg-gray-50 rounded-lg">
-                            <p className="text-lg font-bold text-gray-900">{job.stats.total}</p>
-                            <p className="text-[10px] text-gray-500 uppercase">Total</p>
+                          <div className="text-center p-2 bg-muted rounded-lg">
+                            <p className="text-lg font-semibold text-foreground">{job.stats.total}</p>
+                            <p className="text-[10px] text-muted-foreground uppercase">Total</p>
                           </div>
                           <div className="text-center p-2 bg-blue-50 rounded-lg">
-                            <p className="text-lg font-bold text-blue-600">{job.stats.pending}</p>
-                            <p className="text-[10px] text-gray-500 uppercase">Pending</p>
+                            <p className="text-lg font-semibold text-blue-600">{job.stats.pending}</p>
+                            <p className="text-[10px] text-muted-foreground uppercase">Pending</p>
                           </div>
                           <div className="text-center p-2 bg-green-50 rounded-lg">
-                            <p className="text-lg font-bold text-green-600">{job.stats.shortlisted}</p>
-                            <p className="text-[10px] text-gray-500 uppercase">Shortlisted</p>
+                            <p className="text-lg font-semibold text-green-600">{job.stats.shortlisted}</p>
+                            <p className="text-[10px] text-muted-foreground uppercase">Shortlisted</p>
                           </div>
                           <div className="text-center p-2 bg-purple-50 rounded-lg">
-                            <p className="text-lg font-bold text-purple-600">{job.stats.interviewed}</p>
+                            <p className="text-lg font-semibold text-purple-600">{job.stats.interviewed}</p>
                             <p className="text-[10px] text-gray-500 uppercase">Interviewed</p>
                           </div>
                         </div>
