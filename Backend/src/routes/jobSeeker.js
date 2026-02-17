@@ -1,13 +1,18 @@
-import { Router } from "express";
-import { applyToJob } from "../controllers/jobApplication.js";
+
 import { protect } from "../middleware/auth.js";
+ 
 
-const router = Router();
+import express from "express";
+import multer from "multer";
+import { applyToJob } from "../controllers/jobSeeker.js";
 
-/**
- * Apply to a job
- * POST /api/applications/apply
- */
-router.post("/apply", protect, applyToJob);
+const router = express.Router();
+
+const upload = multer({
+  dest: "uploads/",
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+});
+
+router.post("/apply", protect, upload.single("resume"), applyToJob);
 
 export default router;

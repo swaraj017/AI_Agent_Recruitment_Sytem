@@ -20,7 +20,8 @@ const register = async (req, res) => {
     if (role === "job_seeker") await JobSeeker.create({ authUserId: authUser._id, fullName });
 
     res.status(201).json({ message: "Registered successfully" });
-  } catch (err) {
+  } catch (err) 
+  {
     res.status(500).json({ message: "Registration error" });
   }
 };

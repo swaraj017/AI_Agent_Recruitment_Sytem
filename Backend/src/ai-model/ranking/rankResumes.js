@@ -1,54 +1,119 @@
-import natural from "natural";
+import { pipeline } from "@xenova/transformers";
 
-const tokenizer = new natural.WordTokenizer();
+let embedder;
 
-/* ------------ Clean Text ------------ */
-const preprocess = (text) => {
-  return tokenizer
-    .tokenize(text.toLowerCase())
-    .filter((word) => word.length > 2)
-    .join(" ");
+/* ------------ Load Model Once ------------ */
+const loadModel = async () => {
+  if (!embedder) {
+    console.log("Loading embedding model...");
+    embedder = await pipeline(
+      "feature-extraction",
+      "Xenova/all-MiniLM-L6-v2"
+    );
+    console.log("Model loaded.");
+  }
+  return embedder;
 };
 
 /* ------------ Cosine Similarity ------------ */
-const cosineSimilarity = (vecA, vecB) => {
-  const dot = vecA.reduce((sum, val, i) => sum + val * vecB[i], 0);
-  const magA = Math.sqrt(vecA.reduce((sum, val) => sum + val * val, 0));
-  const magB = Math.sqrt(vecB.reduce((sum, val) => sum + val * val, 0));
-
+const cosineSimilarity = (a, b) => {
+  const dot = a.reduce((sum, val, i) => sum + val * b[i], 0);
+  const magA = Math.sqrt(a.reduce((sum, val) => sum + val * val, 0));
+  const magB = Math.sqrt(b.reduce((sum, val) => sum + val * val, 0));
   if (magA === 0 || magB === 0) return 0;
-
   return dot / (magA * magB);
 };
 
-/* ------------ Ranking Logic ------------ */
-export const rankResumes = (resumes, jobDescription) => {
-  const tfidf = new natural.TfIdf();
+/* ------------ Extract Required Skills from JD ------------ */
+const extractSkills = (jobDescription) => {
+  const commonSkills = [
+    "react",
+    "node",
+    "mongodb",
+    "express",
+    "rest",
+    "javascript",
+    "mern"
+  ];
 
-  const cleanJD = preprocess(jobDescription);
-  tfidf.addDocument(cleanJD);
+  const jd = jobDescription.toLowerCase();
 
-  resumes.forEach((resume) => {
-    const cleanResume = preprocess(resume.text);
-    tfidf.addDocument(cleanResume);
+  return commonSkills.filter(skill => jd.includes(skill));
+};
+
+/* ------------ Experience Score ------------ */
+const calculateExperienceScore = (resumeText) => {
+  const text = resumeText.toLowerCase();
+
+  let score = 0;
+
+  if (text.includes("intern")) score += 0.2;
+  if (text.includes("project")) score += 0.2;
+  if (text.includes("experience")) score += 0.3;
+  if (text.includes("worked")) score += 0.3;
+
+  return Math.min(score, 1); 
+};
+
+/* ------------ Main Ranking Function ------------ */
+export const rankResumes = async (resumes, jobDescription) => {
+  const model = await loadModel();
+
+  const jdEmbedding = await model(jobDescription, {
+    pooling: "mean",
+    normalize: true,
   });
 
-  const ranked = resumes.map((resume, index) => {
-    const jobVector = [];
-    const resumeVector = [];
+  const jdVector = jdEmbedding.data;
 
-    tfidf.listTerms(0).forEach((term) => {
-      jobVector.push(term.tfidf);
-      resumeVector.push(tfidf.tfidf(term.term, index + 1));
+  const requiredSkills = extractSkills(jobDescription);
+
+  const results = [];
+
+  for (const resume of resumes) {
+    const resumeEmbedding = await model(resume.text, {
+      pooling: "mean",
+      normalize: true,
     });
 
-    const similarity = cosineSimilarity(jobVector, resumeVector);
+    const resumeVector = resumeEmbedding.data;
 
-    return {
+    const similarity = cosineSimilarity(jdVector, resumeVector);
+
+    // -------- Skill Match Score --------
+    const resumeText = resume.text.toLowerCase();
+    let matchedSkills = 0;
+
+    requiredSkills.forEach(skill => {
+      if (resumeText.includes(skill)) {
+        matchedSkills++;
+      }
+    });
+
+    const skillScore =
+      requiredSkills.length > 0
+        ? matchedSkills / requiredSkills.length
+        : 0;
+
+    // -------- Experience Score --------
+    const experienceScore = calculateExperienceScore(resume.text);
+
+    // -------- Final Weighted Score --------
+    const finalScore =
+      similarity * 0.5 +   // 50% semantic
+      skillScore * 0.3 +   // 30% skills
+      experienceScore * 0.2; // 20% experience
+
+    const score = Math.round(finalScore * 100);
+
+    results.push({
       ...resume,
-      score: Math.round(similarity * 100),
-    };
-  });
+      score,
+      similarity: similarity.toFixed(2),
+      skillMatch: skillScore.toFixed(2),
+      experienceScore: experienceScore.toFixed(2),
+    });
+  }
 
-  return ranked.sort((a, b) => b.score - a.score);
+  return results.sort((a, b) => b.score - a.score);
 };

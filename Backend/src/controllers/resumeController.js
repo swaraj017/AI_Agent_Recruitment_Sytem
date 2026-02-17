@@ -20,7 +20,7 @@ const extractTextFromPDF = async (filePath) => {
   return text;
 };
 
-const extractTextFromFile = async (file) => {
+export const extractTextFromFile = async (file) => {
   if (file.mimetype === "application/pdf") {
     return await extractTextFromPDF(file.path);
   }
@@ -33,6 +33,7 @@ const extractTextFromFile = async (file) => {
   }
   throw new Error("Unsupported file type");
 };
+
 
 /* ------------------ Upload Controller ------------------ */
 export const uploadAndParseController = async (req, res) => {
@@ -58,7 +59,7 @@ export const uploadAndParseController = async (req, res) => {
 };
 
 /* ------------------ Ranking + ATS Controller ------------------ */
-const FIT_THRESHOLD = 70; // adjust as needed
+const FIT_THRESHOLD = 65;
 
 export const rankResumesController = async (req, res) => {
   try {
@@ -70,60 +71,42 @@ export const rankResumesController = async (req, res) => {
       });
     }
 
-    const ranked = rankResumes(resumes, jobDescription);
+    const ranked = await rankResumes(resumes, jobDescription);
+
     const results = [];
 
-    for (const r of ranked) {
-      const { jobApplicationId, jobSeekerId, text } = r;
-      let parsedResumeDoc = null;
-      const isFit = r.score >= FIT_THRESHOLD;
-
-      // Only save ParsedResume for fit candidates
-      if (isFit) {
-        parsedResumeDoc = await ParsedResume.create({
-          jobApplicationId,
-          jobSeekerId,
-          extractedSkills: [], // populate from parser if available
-          rawTextLength: text.length,
-          parserVersion: "ai-parser-v1",
-        });
-      }
-
-      // Save ATSProfile always
-      const atsProfileDoc = await ATSProfile.create({
-        jobApplicationId,
-        jobId,
-        jobSeekerId,
-        atsScore: r.score,
-        isFit,
-        matchedKeywords: [], // optional: parser output
-        missingKeywords: [],
-        summary: text.slice(0, 500),
-        parsedResumeId: parsedResumeDoc?._id || null,
-        parsedBy: "ai-tfidf-v1",
-      });
-
-      // Update JobApplication status
-      await JobApplication.findByIdAndUpdate(jobApplicationId, {
-        status: isFit ? "shortlisted" : "reviewed",
-      });
+    for (let i = 0; i < ranked.length; i++) {
+      const item = ranked[i];
+      const isFit = item.score >= FIT_THRESHOLD;
 
       results.push({
-        jobApplicationId,
-        jobSeekerId,
-        score: r.score,
-        isFit,
-        atsProfileId: atsProfileDoc._id,
-        parsedResumeId: parsedResumeDoc?._id || null,
+        jobApplicationId: item.jobApplicationId,
+        jobSeekerId: item.jobSeekerId,
+        score: item.score,
+        isFit: isFit,
       });
     }
 
+    // Console output
+    console.log("Ranking Results:");
+    for (let i = 0; i < results.length; i++) {
+      console.log(
+        "Application:",
+        results[i].jobApplicationId,
+        "| Score:",
+        results[i].score,
+        "| Fit:",
+        results[i].isFit
+      );
+    }
+
     return res.json({
-      message: "Ranking and ATS processing completed",
-      results,
+      message: "Ranking completed",
+      results: results,
     });
+
   } catch (error) {
-    console.error(error);
+    console.error("Ranking error:", error);
     return res.status(500).json({
       error: "Ranking failed",
       details: error.message,
