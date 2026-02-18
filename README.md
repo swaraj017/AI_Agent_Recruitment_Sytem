@@ -120,15 +120,126 @@ Final Score =
 
 
 
-## 🏆 Why This Is Better Than TF-IDF
+Score is returned as a percentage (0–100).
 
-| Traditional (TF-IDF) | This System |
-|----------------------|------------|
-| Keyword matching only | Understands meaning |
-| No context awareness | Semantic understanding |
-| Weak filtering | Intelligent ranking |
+---
 
+## 📊 Example Output
+
+```json
+{
+  "jobApplicationId": "app123",
+  "score": 78,
+  "isFit": true
+}
+
+
+
+🏆 Why This Is Better Than TF-IDF
+Traditional (TF-IDF)	This System
+Keyword matching only	Understands meaning
+No context awareness	Semantic understanding
+Weak filtering	Intelligent ranking
 
 ## 🚀 Installation
 npm install @xenova/transformers
 
+📌 Features
+
+AI-based semantic ranking
+
+Skill extraction from job description
+
+Experience detection
+
+Weighted ATS-style scoring
+
+Fast & scalable
+
+Works offline after first model load
+
+Bias-free candidate evaluation
+
+AI-driven automated shortlisting
+
+🔮 Future Improvements
+
+Dynamic skill extraction
+
+Years of experience detection
+
+Keyword stuffing detection
+
+Batch embedding optimization
+
+Store embeddings in database for faster ranking
+
+Real-time AI interview scoring
+
+AI behavioral analysis module
+
+🧠 AI Agent Documentation
+AI Agent Responsibilities
+
+Resume understanding
+
+Context-based questioning
+
+Intelligent follow-up questions
+
+Response scoring
+
+Confidence evaluation
+
+Candidate communication automation
+
+AI Agent Architecture (High-Level)
+
+Resume Parser
+
+Embedding Engine
+
+Conversation Engine
+
+Evaluation Engine
+
+Scoring Module
+
+Decision Engine
+
+Goals of AI Agent
+
+Remove human bias
+
+Standardize interview process
+
+Improve hiring efficiency
+
+Reduce HR workload
+
+Increase hiring accuracy
+
+👨‍💻 Built With
+
+Node.js
+
+Express
+
+MongoDB
+
+Transformers (MiniLM)
+
+MERN Stack Architecture
+
+💡 Summary
+JobPlatform demonstrates how modern AI and transformer-based embeddings can revolutionize recruitment by:
+
+Replacing keyword filtering with semantic understanding
+
+Automating candidate shortlisting
+
+Enabling AI-driven interviews
+
+Removing human bias from early-stage hiring
+
+Creating a scalable, intelligent hiring ecosystem

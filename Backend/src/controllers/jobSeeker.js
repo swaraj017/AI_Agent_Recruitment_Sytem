@@ -1,9 +1,8 @@
+import fs from "fs";
 import JobApplication from "../models/JobApplication.js";
 import JobSeeker from "../models/JobSeeker.js";
+import { extractTextFromFile } from "./resumeController.js";  
 
-/**
- * Job seeker applies to a job
- */
 export const applyToJob = async (req, res) => {
   try {
     const { jobId } = req.body;
@@ -12,7 +11,11 @@ export const applyToJob = async (req, res) => {
       return res.status(400).json({ message: "Job id is required" });
     }
 
-    // get job seeker profile from logged-in user
+    if (!req.file) {
+      return res.status(400).json({ message: "Resume file is required" });
+    }
+
+    // Get job seeker
     const jobSeeker = await JobSeeker.findOne({
       authUserId: req.user._id,
     });
@@ -21,7 +24,7 @@ export const applyToJob = async (req, res) => {
       return res.status(404).json({ message: "Job seeker profile not found" });
     }
 
-    // prevent duplicate applications
+    // Prevent duplicate apply
     const existingApplication = await JobApplication.findOne({
       jobId,
       jobSeekerId: jobSeeker._id,
@@ -31,18 +34,35 @@ export const applyToJob = async (req, res) => {
       return res.status(409).json({ message: "You already applied to this job" });
     }
 
-    // create application
+    /* ---------------- Resume Parsing ---------------- */
+    const resumeText = await extractTextFromFile(req.file);
+
+    console.log("📄 Resume Text:");
+    console.log(resumeText.substring(0, 1000));
+
+    // delete file after extraction
+    fs.unlinkSync(req.file.path);
+
+    /* ---------------- Create Application ---------------- */
     const application = await JobApplication.create({
       jobId,
       jobSeekerId: jobSeeker._id,
+      status: "applied",
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "Application submitted successfully",
       applicationId: application._id,
     });
+
   } catch (error) {
     console.error("Apply to job error:", error);
-    res.status(500).json({ message: "Something went wrong" });
+
+    if (req.file?.path) fs.unlinkSync(req.file.path);
+
+    return res.status(500).json({
+      message: "Something went wrong",
+      error: error.message,
+    });
   }
 };
