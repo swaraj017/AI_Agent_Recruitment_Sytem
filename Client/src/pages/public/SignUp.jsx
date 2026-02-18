@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import api from "../../services/api";
+import { useNavigate } from "react-router-dom";
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -8,9 +10,11 @@ const SignUp = () => {
     password: "",
     confirmPassword: "",
     role: "",
+    companyName: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -32,6 +36,15 @@ const SignUp = () => {
     setLoading(true);
     // TODO: Integrate with API
     console.log("Form submitted:", formData);
+    try{
+      const response = await api.post("/auth/register", formData);
+      console.log("Registration response:", response.data);
+      navigate("/signin");
+    }catch(err){
+        console.log("Registration error", err);
+    }
+
+
     setLoading(false);
   };
 
@@ -108,9 +121,9 @@ const SignUp = () => {
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
-                  onClick={() => setFormData({ ...formData, role: "Job Seeker" })}
+                  onClick={() => setFormData({ ...formData, role: "job_seeker" })}
                   className={`h-9 px-3 rounded-md border transition-colors font-medium text-sm ${
-                    formData.role === "Job Seeker"
+                    formData.role === "job_seeker"
                       ? "border-foreground bg-foreground text-background"
                       : "border-border text-muted-foreground hover:border-foreground/50"
                   }`}
@@ -119,9 +132,9 @@ const SignUp = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setFormData({ ...formData, role: "HR" })}
+                  onClick={() => setFormData({ ...formData, role: "hr" })}
                   className={`h-9 px-3 rounded-md border transition-colors font-medium text-sm ${
-                    formData.role === "HR"
+                    formData.role === "hr"
                       ? "border-foreground bg-foreground text-background"
                       : "border-border text-muted-foreground hover:border-foreground/50"
                   }`}
@@ -130,6 +143,24 @@ const SignUp = () => {
                 </button>
               </div>
             </div>
+
+            {/* Company Name (only for HR) */}
+            {formData.role === "hr" && (
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Company Name
+                </label>
+                <input
+                  type="text"
+                  name="companyName"
+                  value={formData.companyName}
+                  onChange={handleChange}
+                  placeholder="Enter your company name"
+                  required
+                  className="w-full h-9 px-3 rounded-md border border-border bg-background focus:border-foreground focus:ring-1 focus:ring-foreground/10 outline-none transition-colors text-sm"
+                />
+              </div>
+            )}
 
             {/* Password */}
             <div>

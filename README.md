@@ -232,7 +232,6 @@ Transformers (MiniLM)
 MERN Stack Architecture
 
 💡 Summary
-
 JobPlatform demonstrates how modern AI and transformer-based embeddings can revolutionize recruitment by:
 
 Replacing keyword filtering with semantic understanding
