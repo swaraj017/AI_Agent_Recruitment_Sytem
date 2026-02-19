@@ -264,10 +264,10 @@ const JobDetails = () => {
 
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1500));
-
+  
     setIsSubmitting(false);
     setSubmitted(true);
-
+  
     // Close modal after showing success
     setTimeout(() => {
       setShowApplyModal(false);
@@ -422,7 +422,7 @@ const JobDetails = () => {
                 </div>
 
                 <Button
-                  className="w-full mb-4"
+                  className="w-full mb-4 hover:cursor-pointer "
                   onClick={() => setShowApplyModal(true)}
                 >
                   Apply Now
