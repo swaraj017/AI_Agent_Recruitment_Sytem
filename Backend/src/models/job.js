@@ -7,18 +7,61 @@ const jobSchema = new mongoose.Schema(
       ref: "HR",
       required: true,
     },
-    title: { type: String, required: true, trim: true },
-    description: { type: String, required: true },
-    location: { type: String, trim: true },
-    jobType: {
+
+    title: {
       type: String,
-      enum: ["full-time", "part-time", "internship", "contract"],
+      required: true,
+      trim: true,
+    },
+
+    company: {
+      type: String,
+      trim: true,
       required: true,
     },
-    salaryRange: { type: String },
-    deadline: { type: Date },
+
+    location: {
+      type: String,
+      trim: true,
+      required: true,
+    },
+
+    jobType: {
+      type: String,
+      enum: ["Full-time", "Part-time", "Internship", "Contract"],
+      required: true,
+    },
+
+    experience: {
+      type: String,
+      enum: ["Entry Level", "Mid Level", "Senior Level"],
+      default: "Mid Level",
+    },
+
+    salary: {
+      min: Number,
+      max: Number,
+      currency: {
+        type: String,
+        default: "PLN",
+      },
+    },
+
+    description: {
+      type: String,
+      required: true,
+    },
+
+    requirements: String,
+    responsibilities: String,
+    benefits: String,
+
+    deadline: Date,
   },
   { timestamps: true }
 );
 
-export default mongoose.models.Job || mongoose.model("Job", jobSchema);
+ 
+const JOB = mongoose.models.JOB || mongoose.model("JOB", jobSchema);
+
+export default JOB;
