@@ -120,6 +120,20 @@ Final Score =
 
 
 
+<<<<<<<<< Temporary merge branch 1
+## 🏆 Why This Is Better Than TF-IDF
+
+| Traditional (TF-IDF) | This System |
+|----------------------|------------|
+| Keyword matching only | Understands meaning |
+| No context awareness | Semantic understanding |
+| Weak filtering | Intelligent ranking |
+
+
+## 🚀 Installation
+npm install @xenova/transformers
+
+=========
 Score is returned as a percentage (0–100).
 
 ---
@@ -195,4 +209,4 @@ Enabling AI-driven interviews
 Removing human bias from early-stage hiring
 
 Creating a scalable, intelligent hiring ecosystem
-
+>>>>>>>>> Temporary merge branch 2
