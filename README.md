@@ -120,6 +120,7 @@ Final Score =
 
 
 
+<<<<<<< HEAD
 Score is returned as a percentage (0–100).
 
 ---
@@ -244,3 +245,17 @@ Enabling AI-driven interviews
 Removing human bias from early-stage hiring
 
 Creating a scalable, intelligent hiring ecosystem
+=======
+## 🏆 Why This Is Better Than TF-IDF
+
+| Traditional (TF-IDF) | This System |
+|----------------------|------------|
+| Keyword matching only | Understands meaning |
+| No context awareness | Semantic understanding |
+| Weak filtering | Intelligent ranking |
+
+
+## 🚀 Installation
+npm install @xenova/transformers
+
+>>>>>>> 05a3c66025529b26e45fdf73cf09509f3b00bf66

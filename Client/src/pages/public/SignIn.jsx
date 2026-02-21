@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import api from "../../services/api";
+import { useNavigate } from "react-router-dom";
 
 const SignIn = () => {
   const [formData, setFormData] = useState({
@@ -8,6 +10,7 @@ const SignIn = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -16,9 +19,22 @@ const SignIn = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    // TODO: Integrate with API
-    console.log("Form submitted:", formData);
-    setLoading(false);
+    try {
+      const response = await api.post("/auth/login", formData);
+      console.log("Login response:", response.data);
+      localStorage.setItem("token", response.data.token);
+      if(response.data.role === "hr") {
+        localStorage.setItem("role", "hr");
+        navigate("/hr/dashboard");
+      }else{
+          localStorage.setItem("role", "job_seeker");
+          navigate("/user/dashboard");
+      }
+    } catch (error) {
+      console.log("login error", error)
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
