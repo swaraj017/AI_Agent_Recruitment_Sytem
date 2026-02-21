@@ -59,6 +59,7 @@ const PostJob = () => {
     const jobData = { ...formData, skills };
     console.log("Job Posted:", jobData);
     // TODO: API call to post job
+    
     navigate("/hr/my-jobs");
   };
 
