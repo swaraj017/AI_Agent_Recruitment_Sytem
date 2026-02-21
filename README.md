@@ -120,23 +120,27 @@ Final Score =
 
 
 
-<<<<<<< HEAD
+<<<<<<<<< Temporary merge branch 1
+## 🏆 Why This Is Better Than TF-IDF
+
+| Traditional (TF-IDF) | This System |
+|----------------------|------------|
+| Keyword matching only | Understands meaning |
+| No context awareness | Semantic understanding |
+| Weak filtering | Intelligent ranking |
+
+
+## 🚀 Installation
+npm install @xenova/transformers
+
+=========
 Score is returned as a percentage (0–100).
 
 ---
 
-## 📊 Example Output
-
-```json
-{
-  "jobApplicationId": "app123",
-  "score": 78,
-  "isFit": true
-}
 
 
-
-🏆 Why This Is Better Than TF-IDF
+## 🏆 Why This Is Better Than TF-IDF
 Traditional (TF-IDF)	This System
 Keyword matching only	Understands meaning
 No context awareness	Semantic understanding
@@ -145,7 +149,7 @@ Weak filtering	Intelligent ranking
 ## 🚀 Installation
 npm install @xenova/transformers
 
-📌 Features
+## 📌 Features
 
 AI-based semantic ranking
 
@@ -163,7 +167,8 @@ Bias-free candidate evaluation
 
 AI-driven automated shortlisting
 
-🔮 Future Improvements
+
+## 🔮Future Improvements
 
 Dynamic skill extraction
 
@@ -179,48 +184,8 @@ Real-time AI interview scoring
 
 AI behavioral analysis module
 
-🧠 AI Agent Documentation
-AI Agent Responsibilities
 
-Resume understanding
-
-Context-based questioning
-
-Intelligent follow-up questions
-
-Response scoring
-
-Confidence evaluation
-
-Candidate communication automation
-
-AI Agent Architecture (High-Level)
-
-Resume Parser
-
-Embedding Engine
-
-Conversation Engine
-
-Evaluation Engine
-
-Scoring Module
-
-Decision Engine
-
-Goals of AI Agent
-
-Remove human bias
-
-Standardize interview process
-
-Improve hiring efficiency
-
-Reduce HR workload
-
-Increase hiring accuracy
-
-👨‍💻 Built With
+## 👨‍💻 Built With
 
 Node.js
 
@@ -232,8 +197,7 @@ Transformers (MiniLM)
 
 MERN Stack Architecture
 
-💡 Summary
-
+## 💡 Summary
 JobPlatform demonstrates how modern AI and transformer-based embeddings can revolutionize recruitment by:
 
 Replacing keyword filtering with semantic understanding
@@ -245,17 +209,4 @@ Enabling AI-driven interviews
 Removing human bias from early-stage hiring
 
 Creating a scalable, intelligent hiring ecosystem
-=======
-## 🏆 Why This Is Better Than TF-IDF
-
-| Traditional (TF-IDF) | This System |
-|----------------------|------------|
-| Keyword matching only | Understands meaning |
-| No context awareness | Semantic understanding |
-| Weak filtering | Intelligent ranking |
-
-
-## 🚀 Installation
-npm install @xenova/transformers
-
->>>>>>> 05a3c66025529b26e45fdf73cf09509f3b00bf66
+>>>>>>>>> Temporary merge branch 2
