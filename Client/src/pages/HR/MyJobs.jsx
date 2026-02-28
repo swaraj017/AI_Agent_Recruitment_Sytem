@@ -1,11 +1,17 @@
-
-import React, { useState , useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Sidebar, Header } from "../../components/layout";
-import { Card, Badge, Button, Input } from "../../components/common";
+import {
+  Card,
+  Badge,
+  Button,
+  Input,
+  LoadingSpinner,
+} from "../../components/common";
 import { HRJobCard, CandidateCard, StatsCard } from "../../components/job";
 import { hrNavItems } from "./hrNavItems";
 import api from "../../services/api";
-import {useHrJobs} from "../../hooks/useHrJobs"
+import { useHrJobs } from "../../hooks/useHrJobs";
+import { timeAgo } from "../../utils/util";
 
 // Mock jobs with detailed data
 const mockJobs = [
@@ -19,9 +25,20 @@ const mockJobs = [
     postedAt: "2 days ago",
     deadline: "Feb 28, 2026",
     status: "active",
-    description: "We are looking for a Senior Frontend Developer to join our team...",
-    requirements: ["3+ years React experience", "TypeScript proficiency", "REST API experience"],
-    stats: { total: 45, shortlisted: 8, interviewed: 3, rejected: 12, pending: 22 },
+    description:
+      "We are looking for a Senior Frontend Developer to join our team...",
+    requirements: [
+      "3+ years React experience",
+      "TypeScript proficiency",
+      "REST API experience",
+    ],
+    stats: {
+      total: 45,
+      shortlisted: 8,
+      interviewed: 3,
+      rejected: 12,
+      pending: 22,
+    },
     candidates: [
       {
         id: 1,
@@ -95,8 +112,18 @@ const mockJobs = [
     deadline: "Mar 15, 2026",
     status: "active",
     description: "Looking for a creative UX Designer...",
-    requirements: ["Figma expertise", "User research skills", "3+ years experience"],
-    stats: { total: 32, shortlisted: 5, interviewed: 2, rejected: 8, pending: 17 },
+    requirements: [
+      "Figma expertise",
+      "User research skills",
+      "3+ years experience",
+    ],
+    stats: {
+      total: 32,
+      shortlisted: 5,
+      interviewed: 2,
+      rejected: 8,
+      pending: 17,
+    },
     candidates: [
       {
         id: 6,
@@ -105,7 +132,13 @@ const mockJobs = [
         appliedAt: "1 day ago",
         status: "shortlisted",
         atsScore: 95,
-        matchedSkills: ["Figma", "Sketch", "User Research", "Prototyping", "Design Systems"],
+        matchedSkills: [
+          "Figma",
+          "Sketch",
+          "User Research",
+          "Prototyping",
+          "Design Systems",
+        ],
         experience: "6 years",
         education: "MA Design",
         interviewScore: 92,
@@ -135,8 +168,18 @@ const mockJobs = [
     deadline: "Feb 20, 2026",
     status: "active",
     description: "Seeking an experienced Product Manager...",
-    requirements: ["5+ years PM experience", "Agile methodology", "Technical background preferred"],
-    stats: { total: 28, shortlisted: 6, interviewed: 4, rejected: 5, pending: 13 },
+    requirements: [
+      "5+ years PM experience",
+      "Agile methodology",
+      "Technical background preferred",
+    ],
+    stats: {
+      total: 28,
+      shortlisted: 6,
+      interviewed: 4,
+      rejected: 5,
+      pending: 13,
+    },
     candidates: [],
   },
   {
@@ -151,7 +194,13 @@ const mockJobs = [
     status: "closed",
     description: "Backend Developer position (closed)...",
     requirements: ["Node.js", "Python", "AWS"],
-    stats: { total: 52, shortlisted: 10, interviewed: 5, rejected: 30, pending: 7 },
+    stats: {
+      total: 52,
+      shortlisted: 10,
+      interviewed: 5,
+      rejected: 30,
+      pending: 7,
+    },
     hiredCandidate: {
       id: 10,
       name: "Alex Kumar",
@@ -163,7 +212,7 @@ const mockJobs = [
   },
 ];
 
-const MyJobs =   () => {
+const MyJobs = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("active");
   const [selectedJob, setSelectedJob] = useState(null);
@@ -172,11 +221,7 @@ const MyJobs =   () => {
   const [searchCandidate, setSearchCandidate] = useState("");
   const { jobs, loading, error } = useHrJobs();
 
-
   console.log("HR Jobs from hook:", jobs, "Loading:", loading, "Error:", error);
-
-
-
 
   const user = {
     fullName: "HR Manager",
@@ -184,9 +229,11 @@ const MyJobs =   () => {
     role: "HR",
   };
 
-  const activeJobs = mockJobs.filter((j) => j.status === "active");
+  const activeJobs = jobs.filter((j) => j.status === "active");
   const closedJobs = mockJobs.filter((j) => j.status === "closed");
   const displayedJobs = activeTab === "active" ? activeJobs : closedJobs;
+
+  console.log("Displayed Jobs:", displayedJobs);
 
   const handleJobClick = (job) => {
     setSelectedJob(job);
@@ -207,28 +254,43 @@ const MyJobs =   () => {
     }
   };
 
-  const filteredCandidates = selectedJob?.candidates?.filter((c) => {
-    const matchesFilter = candidateFilter === "all" || c.status === candidateFilter;
-    const matchesSearch =
-      c.name.toLowerCase().includes(searchCandidate.toLowerCase()) ||
-      c.email.toLowerCase().includes(searchCandidate.toLowerCase());
-    return matchesFilter && matchesSearch;
-  }) || [];
+  const filteredCandidates =
+    selectedJob?.candidates?.filter((c) => {
+      const matchesFilter =
+        candidateFilter === "all" || c.status === candidateFilter;
+      const matchesSearch =
+        c.name.toLowerCase().includes(searchCandidate.toLowerCase()) ||
+        c.email.toLowerCase().includes(searchCandidate.toLowerCase());
+      return matchesFilter && matchesSearch;
+    }) || [];
 
-  const sortedCandidates = [...filteredCandidates].sort((a, b) => b.atsScore - a.atsScore);
+  const sortedCandidates = [...filteredCandidates].sort(
+    (a, b) => b.atsScore - a.atsScore,
+  );
 
   // Get top candidates (interviewed + shortlisted with scores)
-  const topCandidates = selectedJob?.candidates
-    ?.filter((c) => c.interviewScore)
-    ?.sort((a, b) => (b.interviewScore || 0) - (a.interviewScore || 0))
-    ?.slice(0, 5) || [];
+  const topCandidates =
+    selectedJob?.candidates
+      ?.filter((c) => c.interviewScore)
+      ?.sort((a, b) => (b.interviewScore || 0) - (a.interviewScore || 0))
+      ?.slice(0, 5) || [];
 
   return (
     <div className="h-screen flex bg-background">
-      <Sidebar navItems={hrNavItems} isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
+      <Sidebar
+        navItems={hrNavItems}
+        isOpen={sidebarOpen}
+        onToggle={() => setSidebarOpen(!sidebarOpen)}
+      />
 
-      <div className={`flex-1 flex flex-col transition-all duration-200 ${sidebarOpen ? 'lg:ml-56' : 'lg:ml-16'}`}>
-        <Header user={user} onMenuClick={() => setSidebarOpen(!sidebarOpen)} sidebarOpen={sidebarOpen} />
+      <div
+        className={`flex-1 flex flex-col transition-all duration-200 ${sidebarOpen ? "lg:ml-56" : "lg:ml-16"}`}
+      >
+        <Header
+          user={user}
+          onMenuClick={() => setSidebarOpen(!sidebarOpen)}
+          sidebarOpen={sidebarOpen}
+        />
 
         <main className="flex-1 overflow-hidden p-6">
           <div className="h-full flex flex-col">
@@ -240,8 +302,18 @@ const MyJobs =   () => {
                     onClick={handleBack}
                     className="p-2 hover:bg-muted rounded-lg transition-colors"
                   >
-                    <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    <svg
+                      className="w-5 h-5 text-muted-foreground"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 19l-7-7 7-7"
+                      />
                     </svg>
                   </button>
                 )}
@@ -252,9 +324,12 @@ const MyJobs =   () => {
                     {viewMode === "results" && `Results: ${selectedJob?.title}`}
                   </h1>
                   <p className="text-muted-foreground text-sm">
-                    {viewMode === "list" && "Manage your job postings and view candidates"}
-                    {viewMode === "detail" && `${selectedJob?.location} • ${selectedJob?.type}`}
-                    {viewMode === "results" && "Interview scores and recommendations"}
+                    {viewMode === "list" &&
+                      "Manage your job postings and view candidates"}
+                    {viewMode === "detail" &&
+                      `${selectedJob?.location} • ${selectedJob?.type}`}
+                    {viewMode === "results" &&
+                      "Interview scores and recommendations"}
                   </p>
                 </div>
               </div>
@@ -262,11 +337,21 @@ const MyJobs =   () => {
               {viewMode === "list" && (
                 <Button
                   icon={
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 4v16m8-8H4"
+                      />
                     </svg>
                   }
-                  onClick={() => window.location.href = "/hr/post-job"}
+                  onClick={() => (window.location.href = "/hr/post-job")}
                 >
                   Post New Job
                 </Button>
@@ -274,9 +359,22 @@ const MyJobs =   () => {
 
               {viewMode === "detail" && (
                 <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => handleViewResults(selectedJob)}>
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  <Button
+                    variant="outline"
+                    onClick={() => handleViewResults(selectedJob)}
+                  >
+                    <svg
+                      className="w-4 h-4 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                      />
                     </svg>
                     View Results
                   </Button>
@@ -315,47 +413,76 @@ const MyJobs =   () => {
                 </div>
 
                 {/* Jobs Grid */}
-                <div className="flex-1 overflow-y-auto scrollbar-hide">
-                  <div className="grid grid-cols-2 gap-4">
-                    {displayedJobs.map((job) => (
-                      <Card
-                        key={job.id}
-                        className="cursor-pointer hover:shadow-lg transition-all hover:border-foreground/30"
-                        onClick={() => handleJobClick(job)}
-                      >
-                        <div className="flex items-start justify-between mb-3">
-                          <div>
-                            <h3 className="font-semibold text-foreground">{job.title}</h3>
-                            <p className="text-sm text-muted-foreground">{job.location} • </p>
+                {loading ? (
+                  <div className="flex items-center justify-center h-64">
+                    <LoadingSpinner size="lg" />
+                  </div>
+                ) : (
+                  <div className="flex-1 overflow-y-auto scrollbar-hide">
+                    <div className="grid grid-cols-2 gap-4">
+                      {displayedJobs.map((job) => (
+                        <Card
+                          key={job._id}
+                          className="cursor-pointer hover:shadow-lg transition-all hover:border-foreground/30"
+                          onClick={() => handleJobClick(job)}
+                        >
+                          <div className="flex items-start justify-between mb-3">
+                            <div>
+                              <h3 className="font-semibold text-foreground">
+                                {job.title}
+                              </h3>
+                              <p className="text-sm text-muted-foreground">
+                                {job.location} •{" "}
+                              </p>
+                            </div>
+                            <Badge
+                              variant={
+                                job.status === "active" ? "success" : "outline"
+                              }
+                            >
+                              {job.status}
+                            </Badge>
                           </div>
-                          <Badge variant={job.status === "active" ? "success" : "outline"}>
-                            {job.status}
-                          </Badge>
-                        </div>
 
-                        <p className="text-sm text-muted-foreground mb-4">{job.salary}</p>
+                          {/* <p className="text-sm text-muted-foreground mb-4">{job.salary}</p> */}
 
-                        {/* Stats */}
-                        <div className="grid grid-cols-4 gap-2 mb-4">
-                          <div className="text-center p-2 bg-muted rounded-lg">
-                            <p className="text-lg font-semibold text-foreground">{job.stats.total}</p>
-                            <p className="text-[10px] text-muted-foreground uppercase">Total</p>
+                          {/* Stats */}
+                          <div className="grid grid-cols-4 gap-2 mb-4">
+                            <div className="text-center p-2 bg-muted rounded-lg">
+                              <p className="text-lg font-semibold text-foreground">
+                                {job.total}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground uppercase">
+                                Total
+                              </p>
+                            </div>
+                            <div className="text-center p-2 bg-blue-50 rounded-lg">
+                              <p className="text-lg font-semibold text-blue-600">
+                                {job.pending}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground uppercase">
+                                Pending
+                              </p>
+                            </div>
+                            <div className="text-center p-2 bg-green-50 rounded-lg">
+                              <p className="text-lg font-semibold text-green-600">
+                                {job.shortlisted}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground uppercase">
+                                Shortlisted
+                              </p>
+                            </div>
+                            <div className="text-center p-2 bg-purple-50 rounded-lg">
+                              <p className="text-lg font-semibold text-purple-600">
+                                {job.interviewed}
+                              </p>
+                              <p className="text-[10px] text-gray-500 uppercase">
+                                Interviewed
+                              </p>
+                            </div>
                           </div>
-                          <div className="text-center p-2 bg-blue-50 rounded-lg">
-                            <p className="text-lg font-semibold text-blue-600">{job.stats.pending}</p>
-                            <p className="text-[10px] text-muted-foreground uppercase">Pending</p>
-                          </div>
-                          <div className="text-center p-2 bg-green-50 rounded-lg">
-                            <p className="text-lg font-semibold text-green-600">{job.stats.shortlisted}</p>
-                            <p className="text-[10px] text-muted-foreground uppercase">Shortlisted</p>
-                          </div>
-                          <div className="text-center p-2 bg-purple-50 rounded-lg">
-                            <p className="text-lg font-semibold text-purple-600">{job.stats.interviewed}</p>
-                            <p className="text-[10px] text-gray-500 uppercase">Interviewed</p>
-                          </div>
-                        </div>
 
-                        {/* Hired candidate badge for closed jobs */}
+                          {/* Hired candidate badge for closed jobs
                         {job.status === "closed" && job.hiredCandidate && (
                           <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
                             <p className="text-xs text-green-600 font-medium mb-1">Hired Candidate</p>
@@ -364,17 +491,31 @@ const MyJobs =   () => {
                               ATS: {job.hiredCandidate.atsScore}% • Interview: {job.hiredCandidate.interviewScore}%
                             </p>
                           </div>
-                        )}
-                        <div className="flex items-center justify-between text-xs text-gray-400">
-                          <span>Posted {job.postedAt}</span>
-                          <span>Deadline: {job.deadline}</span>
-                        </div>
-                      </Card>
-                    ))}
+                        )} */}
+                          {console.log("job posted:", timeAgo(job.createdt))}
+                          <div className="flex items-center justify-between text-xs text-gray-400">
+                            <span>Posted {timeAgo(job.createdAt)}</span>
+                            <span>
+                              Deadline:{" "}
+                              {new Date(job.deadline).toLocaleDateString(
+                                "en-GB",
+                                {
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric",
+                                },
+                              )}
+                            </span>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </>
             )}
+
+        
 
             {/* Detail View */}
             {viewMode === "detail" && selectedJob && (
@@ -383,22 +524,32 @@ const MyJobs =   () => {
                 <div className="col-span-1 space-y-4 overflow-y-auto scrollbar-hide">
                   {/* Stats Cards */}
                   <Card>
-                    <h3 className="font-semibold text-gray-900 mb-4">Application Stats</h3>
+                    <h3 className="font-semibold text-gray-900 mb-4">
+                      Application Stats
+                    </h3>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="text-center p-3 bg-gray-50 rounded-xl">
-                        <p className="text-2xl font-bold text-gray-900">{selectedJob.stats.total}</p>
+                        <p className="text-2xl font-bold text-gray-900">
+                          {selectedJob.stats.total}
+                        </p>
                         <p className="text-xs text-gray-500">Total</p>
                       </div>
                       <div className="text-center p-3 bg-blue-50 rounded-xl">
-                        <p className="text-2xl font-bold text-blue-600">{selectedJob.stats.pending}</p>
+                        <p className="text-2xl font-bold text-blue-600">
+                          {selectedJob.stats.pending}
+                        </p>
                         <p className="text-xs text-gray-500">Pending</p>
                       </div>
                       <div className="text-center p-3 bg-green-50 rounded-xl">
-                        <p className="text-2xl font-bold text-green-600">{selectedJob.stats.shortlisted}</p>
+                        <p className="text-2xl font-bold text-green-600">
+                          {selectedJob.stats.shortlisted}
+                        </p>
                         <p className="text-xs text-gray-500">Shortlisted</p>
                       </div>
                       <div className="text-center p-3 bg-purple-50 rounded-xl">
-                        <p className="text-2xl font-bold text-purple-600">{selectedJob.stats.interviewed}</p>
+                        <p className="text-2xl font-bold text-purple-600">
+                          {selectedJob.stats.interviewed}
+                        </p>
                         <p className="text-xs text-gray-500">Interviewed</p>
                       </div>
                     </div>
@@ -406,23 +557,37 @@ const MyJobs =   () => {
 
                   {/* Job Details */}
                   <Card>
-                    <h3 className="font-semibold text-gray-900 mb-3">Job Details</h3>
+                    <h3 className="font-semibold text-gray-900 mb-3">
+                      Job Details
+                    </h3>
                     <div className="space-y-3 text-sm">
                       <div className="flex justify-between">
                         <span className="text-gray-500">Salary</span>
-                        <span className="font-medium">{selectedJob.salary}</span>
+                        <span className="font-medium">
+                          {selectedJob.salary}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-500">Posted</span>
-                        <span className="font-medium">{selectedJob.postedAt}</span>
+                        <span className="font-medium">
+                          {selectedJob.postedAt}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-500">Deadline</span>
-                        <span className="font-medium">{selectedJob.deadline}</span>
+                        <span className="font-medium">
+                          {selectedJob.deadline}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-500">Status</span>
-                        <Badge variant={selectedJob.status === "active" ? "success" : "outline"}>
+                        <Badge
+                          variant={
+                            selectedJob.status === "active"
+                              ? "success"
+                              : "outline"
+                          }
+                        >
                           {selectedJob.status}
                         </Badge>
                       </div>
@@ -431,12 +596,25 @@ const MyJobs =   () => {
 
                   {/* Requirements */}
                   <Card>
-                    <h3 className="font-semibold text-gray-900 mb-3">Requirements</h3>
+                    <h3 className="font-semibold text-gray-900 mb-3">
+                      Requirements
+                    </h3>
                     <ul className="space-y-2">
                       {selectedJob.requirements.map((req, index) => (
-                        <li key={index} className="flex items-start gap-2 text-sm text-gray-600">
-                          <svg className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        <li
+                          key={index}
+                          className="flex items-start gap-2 text-sm text-gray-600"
+                        >
+                          <svg
+                            className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                           {req}
                         </li>
@@ -448,7 +626,9 @@ const MyJobs =   () => {
                 {/* Candidates List */}
                 <div className="col-span-2 flex flex-col min-h-0">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold text-gray-900">Candidates ({filteredCandidates.length})</h3>
+                    <h3 className="font-semibold text-gray-900">
+                      Candidates ({filteredCandidates.length})
+                    </h3>
                     <div className="flex gap-2">
                       <Input
                         placeholder="Search candidates..."
@@ -456,8 +636,18 @@ const MyJobs =   () => {
                         onChange={(e) => setSearchCandidate(e.target.value)}
                         className="w-64"
                         icon={
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                            />
                           </svg>
                         }
                       />
@@ -486,16 +676,32 @@ const MyJobs =   () => {
                           )}
                           <CandidateCard
                             candidate={candidate}
-                            onViewProfile={() => console.log("View profile:", candidate.id)}
-                            onShortlist={() => console.log("Shortlist:", candidate.id)}
-                            onReject={() => console.log("Reject:", candidate.id)}
+                            onViewProfile={() =>
+                              console.log("View profile:", candidate.id)
+                            }
+                            onShortlist={() =>
+                              console.log("Shortlist:", candidate.id)
+                            }
+                            onReject={() =>
+                              console.log("Reject:", candidate.id)
+                            }
                           />
                         </div>
                       ))
                     ) : (
                       <div className="flex flex-col items-center justify-center h-64 text-gray-400">
-                        <svg className="w-12 h-12 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <svg
+                          className="w-12 h-12 mb-3"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
                         </svg>
                         <p className="text-sm">No candidates found</p>
                       </div>
@@ -513,8 +719,18 @@ const MyJobs =   () => {
                   <div className="col-span-3 grid grid-cols-4 gap-4">
                     <StatsCard
                       icon={
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
                         </svg>
                       }
                       label="Total Applicants"
@@ -522,8 +738,18 @@ const MyJobs =   () => {
                     />
                     <StatsCard
                       icon={
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
                         </svg>
                       }
                       label="Shortlisted"
@@ -533,8 +759,18 @@ const MyJobs =   () => {
                     />
                     <StatsCard
                       icon={
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
                         </svg>
                       }
                       label="Interviewed"
@@ -542,8 +778,18 @@ const MyJobs =   () => {
                     />
                     <StatsCard
                       icon={
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                          />
                         </svg>
                       }
                       label="Avg. ATS Score"
@@ -555,7 +801,11 @@ const MyJobs =   () => {
                   <div className="col-span-2">
                     <Card>
                       <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                        <svg className="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                        <svg
+                          className="w-5 h-5 text-yellow-500"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
                           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                         </svg>
                         Top Candidates (by Interview Score)
@@ -567,14 +817,22 @@ const MyJobs =   () => {
                             <div
                               key={candidate.id}
                               className={`flex items-center gap-4 p-4 rounded-xl ${
-                                index === 0 ? "bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200" : "bg-gray-50"
+                                index === 0
+                                  ? "bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200"
+                                  : "bg-gray-50"
                               }`}
                             >
-                              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
-                                index === 0 ? "bg-yellow-500 text-white" :
-                                index === 1 ? "bg-gray-400 text-white" :
-                                index === 2 ? "bg-orange-400 text-white" : "bg-gray-300 text-gray-600"
-                              }`}>
+                              <div
+                                className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
+                                  index === 0
+                                    ? "bg-yellow-500 text-white"
+                                    : index === 1
+                                      ? "bg-gray-400 text-white"
+                                      : index === 2
+                                        ? "bg-orange-400 text-white"
+                                        : "bg-gray-300 text-gray-600"
+                                }`}
+                              >
                                 {index + 1}
                               </div>
                               <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center">
@@ -583,16 +841,26 @@ const MyJobs =   () => {
                                 </span>
                               </div>
                               <div className="flex-1">
-                                <p className="font-semibold text-gray-900">{candidate.name}</p>
-                                <p className="text-xs text-gray-500">{candidate.experience} • {candidate.education}</p>
+                                <p className="font-semibold text-gray-900">
+                                  {candidate.name}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {candidate.experience} • {candidate.education}
+                                </p>
                               </div>
                               <div className="text-center px-3">
-                                <p className="text-lg font-bold text-green-600">{candidate.atsScore}%</p>
+                                <p className="text-lg font-bold text-green-600">
+                                  {candidate.atsScore}%
+                                </p>
                                 <p className="text-[10px] text-gray-500">ATS</p>
                               </div>
                               <div className="text-center px-3">
-                                <p className="text-lg font-bold text-purple-600">{candidate.interviewScore}%</p>
-                                <p className="text-[10px] text-gray-500">Interview</p>
+                                <p className="text-lg font-bold text-purple-600">
+                                  {candidate.interviewScore}%
+                                </p>
+                                <p className="text-[10px] text-gray-500">
+                                  Interview
+                                </p>
                               </div>
                               <Button size="sm">View Details</Button>
                             </div>
@@ -600,10 +868,22 @@ const MyJobs =   () => {
                         </div>
                       ) : (
                         <div className="text-center py-8 text-gray-400">
-                          <svg className="w-12 h-12 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          <svg
+                            className="w-12 h-12 mx-auto mb-3"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={1.5}
+                              d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
                           </svg>
-                          <p className="text-sm">No interviewed candidates yet</p>
+                          <p className="text-sm">
+                            No interviewed candidates yet
+                          </p>
                         </div>
                       )}
                     </Card>
@@ -613,23 +893,42 @@ const MyJobs =   () => {
                   <div className="col-span-1">
                     <Card className="bg-gradient-to-br from-secondary/5 to-purple-50">
                       <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                        <svg className="w-5 h-5 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        <svg
+                          className="w-5 h-5 text-secondary"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M13 10V3L4 14h7v7l9-11h-7z"
+                          />
                         </svg>
                         AI Recommendations
                       </h3>
 
                       <div className="space-y-3">
                         {topCandidates.slice(0, 3).map((candidate, index) => (
-                          <div key={candidate.id} className="bg-white rounded-xl p-3 border border-secondary/20">
+                          <div
+                            key={candidate.id}
+                            className="bg-white rounded-xl p-3 border border-secondary/20"
+                          >
                             <div className="flex items-center gap-2 mb-2">
-                              <Badge variant="secondary" className="text-[10px]">
+                              <Badge
+                                variant="secondary"
+                                className="text-[10px]"
+                              >
                                 #{index + 1} Recommended
                               </Badge>
                             </div>
-                            <p className="font-medium text-gray-900 text-sm">{candidate.name}</p>
+                            <p className="font-medium text-gray-900 text-sm">
+                              {candidate.name}
+                            </p>
                             <p className="text-xs text-gray-500 mt-1">
-                              Strong match based on skills alignment and interview performance
+                              Strong match based on skills alignment and
+                              interview performance
                             </p>
                             <div className="flex gap-2 mt-2">
                               <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
@@ -654,14 +953,46 @@ const MyJobs =   () => {
                   {/* Score Distribution */}
                   <div className="col-span-3">
                     <Card>
-                      <h3 className="font-semibold text-gray-900 mb-4">Score Distribution</h3>
+                      <h3 className="font-semibold text-gray-900 mb-4">
+                        Score Distribution
+                      </h3>
                       <div className="grid grid-cols-5 gap-4">
                         {[
-                          { range: "90-100%", count: selectedJob.candidates.filter(c => c.atsScore >= 90).length, color: "bg-green-500" },
-                          { range: "80-89%", count: selectedJob.candidates.filter(c => c.atsScore >= 80 && c.atsScore < 90).length, color: "bg-green-400" },
-                          { range: "70-79%", count: selectedJob.candidates.filter(c => c.atsScore >= 70 && c.atsScore < 80).length, color: "bg-yellow-400" },
-                          { range: "60-69%", count: selectedJob.candidates.filter(c => c.atsScore >= 60 && c.atsScore < 70).length, color: "bg-orange-400" },
-                          { range: "Below 60%", count: selectedJob.candidates.filter(c => c.atsScore < 60).length, color: "bg-red-400" },
+                          {
+                            range: "90-100%",
+                            count: selectedJob.candidates.filter(
+                              (c) => c.atsScore >= 90,
+                            ).length,
+                            color: "bg-green-500",
+                          },
+                          {
+                            range: "80-89%",
+                            count: selectedJob.candidates.filter(
+                              (c) => c.atsScore >= 80 && c.atsScore < 90,
+                            ).length,
+                            color: "bg-green-400",
+                          },
+                          {
+                            range: "70-79%",
+                            count: selectedJob.candidates.filter(
+                              (c) => c.atsScore >= 70 && c.atsScore < 80,
+                            ).length,
+                            color: "bg-yellow-400",
+                          },
+                          {
+                            range: "60-69%",
+                            count: selectedJob.candidates.filter(
+                              (c) => c.atsScore >= 60 && c.atsScore < 70,
+                            ).length,
+                            color: "bg-orange-400",
+                          },
+                          {
+                            range: "Below 60%",
+                            count: selectedJob.candidates.filter(
+                              (c) => c.atsScore < 60,
+                            ).length,
+                            color: "bg-red-400",
+                          },
                         ].map((item) => (
                           <div key={item.range} className="text-center">
                             <div className="h-24 bg-gray-100 rounded-lg flex items-end justify-center p-2 mb-2">
@@ -672,8 +1003,12 @@ const MyJobs =   () => {
                                 }}
                               />
                             </div>
-                            <p className="text-lg font-bold text-gray-900">{item.count}</p>
-                            <p className="text-xs text-gray-500">{item.range}</p>
+                            <p className="text-lg font-bold text-gray-900">
+                              {item.count}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {item.range}
+                            </p>
                           </div>
                         ))}
                       </div>
