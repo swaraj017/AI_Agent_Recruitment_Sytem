@@ -55,7 +55,6 @@ const jobSchema = new mongoose.Schema(
     requirements: String,
     responsibilities: String,
     benefits: String,
-
     deadline: Date,
   },
   { timestamps: true }

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Sidebar, Header } from "../../components/layout";
 import { Card, Button, Input, Badge } from "../../components/common";
 import { hrNavItems } from "./hrNavItems";
+import api from "../../services/api";
 
 const jobTypes = ["Full-time", "Part-time", "Contract", "Internship", "Remote"];
 const experienceLevels = ["Entry Level", "Mid Level", "Senior Level", "Lead", "Manager"];
@@ -17,7 +18,7 @@ const PostJob = () => {
     title: "",
     company: "",
     location: "",
-    type: "Full-time",
+    jobType: "Full-time",
     experience: "Mid Level",
     salaryMin: "",
     salaryMax: "",
@@ -54,13 +55,22 @@ const PostJob = () => {
     setSkills((prev) => prev.filter((skill) => skill !== skillToRemove));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const jobData = { ...formData, skills };
+    const jobData = { ...formData, skills: skills };
     console.log("Job Posted:", jobData);
     // TODO: API call to post job
+    try{
+
+      const response = await api.post("/hr/jobs", jobData);
+      console.log("Job posted successfully:", response.data);
+    }catch(err){
+      console.log("Failed to post job:", err);
+    }
+
+
     
-    navigate("/hr/my-jobs");
+    // navigate("/hr/my-jobs");
   };
 
   const steps = [
@@ -162,8 +172,8 @@ const PostJob = () => {
                       <div>
                         <label className="block text-sm font-medium text-foreground mb-1">Job Type *</label>
                         <select
-                          name="type"
-                          value={formData.type}
+                          name="jobType"
+                          value={formData.jobType}
                           onChange={handleChange}
                           className="w-full px-4 py-2.5 rounded-lg border border-border text-sm bg-card focus:border-foreground focus:ring-1 focus:ring-foreground/10 outline-none"
                         >

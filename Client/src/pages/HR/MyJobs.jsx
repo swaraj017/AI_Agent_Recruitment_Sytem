@@ -1,8 +1,11 @@
-import React, { useState } from "react";
+
+import React, { useState , useEffect } from "react";
 import { Sidebar, Header } from "../../components/layout";
 import { Card, Badge, Button, Input } from "../../components/common";
 import { HRJobCard, CandidateCard, StatsCard } from "../../components/job";
 import { hrNavItems } from "./hrNavItems";
+import api from "../../services/api";
+import {useHrJobs} from "../../hooks/useHrJobs"
 
 // Mock jobs with detailed data
 const mockJobs = [
@@ -160,13 +163,20 @@ const mockJobs = [
   },
 ];
 
-const MyJobs = () => {
+const MyJobs =   () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("active");
   const [selectedJob, setSelectedJob] = useState(null);
   const [viewMode, setViewMode] = useState("list"); // list, detail, results
   const [candidateFilter, setCandidateFilter] = useState("all");
   const [searchCandidate, setSearchCandidate] = useState("");
+  const { jobs, loading, error } = useHrJobs();
+
+
+  console.log("HR Jobs from hook:", jobs, "Loading:", loading, "Error:", error);
+
+
+
 
   const user = {
     fullName: "HR Manager",
@@ -316,7 +326,7 @@ const MyJobs = () => {
                         <div className="flex items-start justify-between mb-3">
                           <div>
                             <h3 className="font-semibold text-foreground">{job.title}</h3>
-                            <p className="text-sm text-muted-foreground">{job.location} • {job.type}</p>
+                            <p className="text-sm text-muted-foreground">{job.location} • </p>
                           </div>
                           <Badge variant={job.status === "active" ? "success" : "outline"}>
                             {job.status}
@@ -355,7 +365,6 @@ const MyJobs = () => {
                             </p>
                           </div>
                         )}
-
                         <div className="flex items-center justify-between text-xs text-gray-400">
                           <span>Posted {job.postedAt}</span>
                           <span>Deadline: {job.deadline}</span>

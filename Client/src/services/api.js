@@ -6,7 +6,7 @@ api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   const role = localStorage.getItem("role");
   if (token) config.headers.Authorization = `Bearer ${token}`;
-  if (rol) config.headers.Role = role;
+  if (role) config.headers.Role = role;
   return config;
 });
 
