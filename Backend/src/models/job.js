@@ -52,10 +52,31 @@ const jobSchema = new mongoose.Schema(
       required: true,
     },
 
+    total:{
+       type: Number,
+       default: 0,
+    },
+     pending:{
+        type: Number,
+        default: 0,
+     },
+     status:{
+        type: String,
+        enum: ["active", "closed"],
+        default: "active",
+     },
+     shortlisted:{
+        type: Number,
+        default: 0,
+     }, 
+     interviewed:{
+        type: Number,
+        default: 0, 
+      },
+
     requirements: String,
     responsibilities: String,
     benefits: String,
-
     deadline: Date,
   },
   { timestamps: true }
