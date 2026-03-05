@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sidebar, Header } from "../../components/layout";
 import { Card, Badge, Button, Input, Select } from "../../components/common";
+import api from "../../services/api";
+import { timeAgo } from "../../utils/util";
 
 // Navigation items for User/Job Seeker
 const navItems = [
@@ -96,6 +98,26 @@ const JobBoard = () => {
   const [location, setLocation] = useState("all");
   const [jobType, setJobType] = useState("all");
   const [workMode, setWorkMode] = useState("all");
+  const [jobs, setJobs] = useState([]);
+  
+
+  // Fetch jobs from backend on component mount
+  useEffect(() => {
+     const fethcJobs = async () => {
+      try{
+      const response = await api.get("/user/jobs")
+      if(response.data.success){
+        setJobs(response.data.jobs);
+        console.log("fetched jobs", response.data.jobs);
+      }
+      }catch(e){
+         console.log("something went wrong while fetching jobs", e); 
+      }
+     }
+     fethcJobs();
+},[]); 
+
+
 
   const user = {
     fullName: "Anne Douglas",
@@ -124,7 +146,7 @@ const JobBoard = () => {
     { value: "on-site", label: "On-site" },
   ];
 
-  const filteredJobs = mockJobs.filter((job) => {
+  const filteredJobs = jobs.filter((job) => {
     const matchesSearch =
       job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -135,12 +157,12 @@ const JobBoard = () => {
       location === "all" ||
       job.location.toLowerCase().includes(location.toLowerCase());
     const matchesType =
-      jobType === "all" || job.type.toLowerCase() === jobType.toLowerCase();
+      jobType === "all" || job.jobType.toLowerCase() === jobType.toLowerCase();
     const matchesMode =
       workMode === "all" ||
       job.workMode.toLowerCase() === workMode.toLowerCase();
 
-    return matchesSearch && matchesLocation && matchesType && matchesMode;
+    return matchesSearch && matchesLocation && matchesMode && matchesType; // && matchesType && matchesMode;
   });
 
   const getLogoColor = (name) => {
@@ -250,10 +272,10 @@ const JobBoard = () => {
           <div className="space-y-3">
             {filteredJobs.map((job) => (
               <Card
-                key={job.id}
+                key={job._id}
                 hover
                 className="cursor-pointer"
-                onClick={() => handleJobClick(job.id)}
+                onClick={() => handleJobClick(job._id)}
               >
                 <div className="flex items-start gap-4">
                   {/* Company Logo */}
@@ -277,25 +299,25 @@ const JobBoard = () => {
                         </p>
                       </div>
                       <div className="text-right flex-shrink-0">
-                        <p className="font-medium text-foreground">{job.salary}</p>
-                        <p className="text-xs text-muted-foreground">{job.postedAt}</p>
+                        <p className="font-medium text-foreground">${`${job.salary.min} - ${job.salary.max} ${job.salary.currency}`}</p>
+                        <p className="text-xs text-muted-foreground">{timeAgo(job.createdAt)}</p>
                       </div>
                     </div>
 
                     {/* Tags */}
                     <div className="flex items-center gap-2 mt-3 flex-wrap">
-                      <Badge variant="outline">{job.type}</Badge>
-                      <Badge variant="outline">{job.workMode}</Badge>
-                      {job.skills.slice(0, 3).map((skill, idx) => (
+                      <Badge variant="outline">{job.jobType}</Badge>
+                      <Badge variant="outline">{job.location}</Badge>
+                      {/* {job.skills.slice(0, 3).map((skill, idx) => (
                         <Badge key={idx} variant="default" className="text-[10px]">
                           {skill}
                         </Badge>
-                      ))}
-                      {job.skills.length > 3 && (
+                      ))} */}
+                      {/* {job.skills.length > 3 && (
                         <span className="text-xs text-muted-foreground">
                           +{job.skills.length - 3} more
                         </span>
-                      )}
+                      )} */}
                     </div>
                   </div>
                 </div>

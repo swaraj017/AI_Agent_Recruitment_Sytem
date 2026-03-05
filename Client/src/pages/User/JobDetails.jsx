@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Sidebar, Header } from "../../components/layout";
 import { Card, Badge, Button } from "../../components/common";
@@ -194,6 +194,17 @@ const JobDetails = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [jobDetails, setJobDetails] = useState(null);
+
+  useEffect(() => {
+    const fetchJobDetails = async () => {
+      
+
+    }
+
+    fetchJobDetails(); 
+
+  },[]); 
 
   const user = {
     fullName: "Anne Douglas",
