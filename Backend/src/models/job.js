@@ -46,11 +46,6 @@ const jobSchema = new mongoose.Schema(
         default: "PLN",
       },
     },
-    skills:
-    {
-      type:[String],
-    },
-
     description: {
       type: String,
       required: true,
