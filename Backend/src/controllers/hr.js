@@ -20,6 +20,7 @@ export const postJob = async (req, res) => {
       responsibilities,
       benefits,
       deadline,
+      skills,
     } = req.body;
 
     const hr = await HR.findOne({ authUserId: req.user._id });
@@ -50,6 +51,7 @@ export const postJob = async (req, res) => {
       responsibilities,
       benefits,
       deadline,
+      skills,
     });
 
     res.status(201).json({

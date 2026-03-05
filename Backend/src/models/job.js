@@ -25,6 +25,7 @@ const jobSchema = new mongoose.Schema(
       trim: true,
       required: true,
     },
+    skills: [String],
 
     jobType: {
       type: String,
