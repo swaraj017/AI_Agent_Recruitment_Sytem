@@ -1,7 +1,7 @@
 import express from "express";
 import multer from "multer";
 import { protect } from "../middleware/auth.js";
-import { applyToJob } from "../controllers/jobSeeker.js";
+import { applyToJob ,GetAllJobs} from "../controllers/jobSeeker.js";
 
 const router = express.Router();
 
@@ -40,6 +40,7 @@ const upload = multer({
  *   404 -> Job not found
  *   409 -> Already applied
  */
+router.get("/jobs",GetAllJobs);
 router.post("/apply", protect, upload.single("resume"), applyToJob);
 
 export default router;

@@ -84,3 +84,23 @@ export const applyToJob = async (req, res) => {
     });
   }
 };
+
+export const GetAllJobs = async (req, res) => {
+  try {
+    const allJobs = await Job.find({});
+
+    return res.status(200).json({
+      success: true,
+      count: allJobs.length,
+      jobs: allJobs
+    });
+
+  } catch (error) {
+    console.log("Failed to load all jobs", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to load all jobs"
+    });
+  }
+};

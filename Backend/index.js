@@ -5,7 +5,7 @@ import authRoute from "./src/routes/userRoutes.js";
 import hrRoutes from "./src/routes/hr.js";
 import resumeRoutes from "./src/routes/resumeRoutes.js"
 
-import jobApplicationRoutes from "./src/routes/jobSeeker.js";
+import jobSeeker from "./src/routes/jobSeeker.js";
 
 import cors from "cors";  
 
@@ -25,7 +25,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", authRoute);
 app.use("/api/hr", hrRoutes);
-app.use("/api/applications", jobApplicationRoutes);
+app.use("/api/user", jobSeeker);
 app.use("/api/resume",resumeRoutes);
 
 
