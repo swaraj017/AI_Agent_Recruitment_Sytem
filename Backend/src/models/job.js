@@ -46,7 +46,6 @@ const jobSchema = new mongoose.Schema(
         default: "PLN",
       },
     },
-
     description: {
       type: String,
       required: true,
