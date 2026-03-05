@@ -1,4 +1,4 @@
-export const timeAgo = (timestamp: string) => {
+export const timeAgo = (timestamp) => {
   const now = new Date();
   const past = new Date(timestamp);
   const diffInMs = now.getTime() - past.getTime();
@@ -13,3 +13,14 @@ export const timeAgo = (timestamp: string) => {
   if (diffInDays < 365) return `${Math.floor(diffInDays / 30)} months ago`;
   return `${Math.floor(diffInDays / 365)} years ago`;
 };
+
+
+export function formatDate(isoString) {
+  const date = new Date(isoString);
+  
+  const day = date.getUTCDate();
+  const year = date.getUTCFullYear();
+  const month = date.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' });
+  
+  return `${day} ${month}, ${year}`;
+}

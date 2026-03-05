@@ -12,6 +12,6 @@ const upload = multer({
 
 router.get("/jobs",protect,GetAllJobs);
 router.get("/jobs/:id", protect, jobDetails);
-router.post("/apply", upload.single("resume"), applyToJob);
+router.post("/apply", protect, upload.single("resume"), applyToJob);
 
 export default router;

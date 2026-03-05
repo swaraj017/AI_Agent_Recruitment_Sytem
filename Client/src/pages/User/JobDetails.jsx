@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Sidebar, Header } from "../../components/layout";
 import { Card, Badge, Button } from "../../components/common";
+import api from "../../services/api";
+import { formatDate, timeAgo } from "../../utils/util";
+import axios from "axios";
 
 // Navigation items
 const navItems = [
@@ -194,10 +197,17 @@ const JobDetails = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [jobDetails, setJobDetails] = useState(null);
+  const [job, setJob] = useState(null);
+
 
   useEffect(() => {
     const fetchJobDetails = async () => {
+      try{
+        const response = await api.get(`/user/jobs/${id}`);
+        setJob(response.data.job);
+      }catch(e){
+        console.error("Failed to fetch job details", e);
+      }
       
 
     }
@@ -211,7 +221,7 @@ const JobDetails = () => {
     email: "anne@example.com",
   };
 
-  const job = mockJobs.find((j) => j.id === parseInt(id));
+  // const job = mockJobs.find((j) => j.id === 1);
 
   if (!job) {
     return (
@@ -273,11 +283,41 @@ const JobDetails = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-  
+    try{
+    const token = localStorage.getItem("token")
+    const formData = new FormData();
+    formData.append("jobId", job._id);
+    formData.append("resume", applicationData.resume);
+    formData.append("coverLetter", applicationData.coverLetter);
+    formData.append("linkedIn", applicationData.linkedIn);
+    formData.append("portfolio", applicationData.portfolio);
+    formData.append("experience", applicationData.experience);
+    formData.append("expectedSalary", applicationData.expectedSalary);
+    formData.append("noticePeriod", applicationData.noticePeriod);
+    formData.append("whyJoin", applicationData.whyJoin);
+
+    console.log("formData", formData.get("resume"));
+
+    const response = await axios.post("http://localhost:8000/api/user/apply", formData, {
+      headers:{
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`
+
+      }})
+      console.log("Application response", response.data);
+
     setIsSubmitting(false);
     setSubmitted(true);
+
+
+    }catch(err){
+       console.error("Failed to submit application", err);
+    }
+
+   
+
+  
+  
   
     // Close modal after showing success
     setTimeout(() => {
@@ -349,8 +389,8 @@ const JobDetails = () => {
                       {job.company} • {job.location}
                     </p>
                     <div className="flex items-center gap-2 mt-3 flex-wrap">
-                      <Badge variant="outline">{job.type}</Badge>
-                      <Badge variant="outline">{job.workMode}</Badge>
+                      <Badge variant="outline">{job.jobType}</Badge>
+                      {/* <Badge variant="outline">{job.workMode}</Badge> */}
                       <Badge variant="default">{job.experience}</Badge>
                     </div>
                   </div>
@@ -387,26 +427,7 @@ const JobDetails = () => {
                   Benefits
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {job.benefits.map((benefit, idx) => (
-                    <div key={idx} className="flex items-center gap-2">
-                      <svg
-                        className="w-4 h-4 text-green-500 flex-shrink-0"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                      <span className="text-sm text-muted-foreground">
-                        {benefit}
-                      </span>
-                    </div>
-                  ))}
+                  {job.benefits}
                 </div>
               </Card>
 
@@ -427,7 +448,7 @@ const JobDetails = () => {
               <Card className="sticky top-6">
                 <div className="text-center mb-4">
                   <p className="text-2xl font-semibold text-foreground">
-                    {job.salary}
+                    {/* {job.salary} */}
                   </p>
                   <p className="text-sm text-muted-foreground">Monthly salary</p>
                 </div>
@@ -459,11 +480,11 @@ const JobDetails = () => {
                 <div className="border-t border-border mt-4 pt-4 space-y-3">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Posted</span>
-                    <span className="text-foreground">{job.postedAt}</span>
+                    <span className="text-foreground">{timeAgo(job.createdAt)}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Deadline</span>
-                    <span className="text-foreground">{job.deadline}</span>
+                    <span className="text-foreground">{formatDate(job.deadline)}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Experience</span>
@@ -534,7 +555,7 @@ const JobDetails = () => {
                 </p>
               </div>
             ) : (
-              <form onSubmit={handleSubmitApplication} className="p-6 space-y-5">
+              <form type="multipart/form-data" onSubmit={handleSubmitApplication} className="p-6 space-y-5">
                 {/* Resume Upload */}
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">

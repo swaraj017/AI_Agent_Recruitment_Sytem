@@ -8,6 +8,11 @@ import { extractTextFromFile } from "../controllers/resumeController.js";
 export const applyToJob = async (req, res) => {
   try {
     const { jobId } = req.body;
+    
+    console.log("body:", req.body);
+    console.log("file:", req.file);
+
+
 
     if (!jobId) {
       return res.status(400).json({ message: "Job ID is required" });
