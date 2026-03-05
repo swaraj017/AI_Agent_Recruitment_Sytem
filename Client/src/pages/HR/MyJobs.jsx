@@ -443,8 +443,8 @@ const MyJobs = () => {
                               {job.status}
                             </Badge>
                           </div>
-
-                          {/* <p className="text-sm text-muted-foreground mb-4">{job.salary}</p> */}
+                            
+                          <p className="text-sm text-muted-foreground mb-4">{`${job.salary.min}-${job.salary.max} ${job.salary.currency}`}</p>
 
                           {/* Stats */}
                           <div className="grid grid-cols-4 gap-2 mb-4">
@@ -530,25 +530,25 @@ const MyJobs = () => {
                     <div className="grid grid-cols-2 gap-3">
                       <div className="text-center p-3 bg-gray-50 rounded-xl">
                         <p className="text-2xl font-bold text-gray-900">
-                          {selectedJob.stats.total}
+                          {selectedJob.total}
                         </p>
                         <p className="text-xs text-gray-500">Total</p>
                       </div>
                       <div className="text-center p-3 bg-blue-50 rounded-xl">
                         <p className="text-2xl font-bold text-blue-600">
-                          {selectedJob.stats.pending}
+                          {selectedJob.pending}
                         </p>
                         <p className="text-xs text-gray-500">Pending</p>
                       </div>
                       <div className="text-center p-3 bg-green-50 rounded-xl">
                         <p className="text-2xl font-bold text-green-600">
-                          {selectedJob.stats.shortlisted}
+                          {selectedJob.shortlisted}
                         </p>
                         <p className="text-xs text-gray-500">Shortlisted</p>
                       </div>
                       <div className="text-center p-3 bg-purple-50 rounded-xl">
                         <p className="text-2xl font-bold text-purple-600">
-                          {selectedJob.stats.interviewed}
+                          {selectedJob.interviewed}
                         </p>
                         <p className="text-xs text-gray-500">Interviewed</p>
                       </div>
@@ -564,13 +564,13 @@ const MyJobs = () => {
                       <div className="flex justify-between">
                         <span className="text-gray-500">Salary</span>
                         <span className="font-medium">
-                          {selectedJob.salary}
+                          {JSON.toString(selectedJob.salary)}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-500">Posted</span>
                         <span className="font-medium">
-                          {selectedJob.postedAt}
+                          {selectedJob.createdAt}
                         </span>
                       </div>
                       <div className="flex justify-between">
@@ -600,7 +600,7 @@ const MyJobs = () => {
                       Requirements
                     </h3>
                     <ul className="space-y-2">
-                      {selectedJob.requirements.map((req, index) => (
+                      {/* {selectedJob.requirements.map((req, index) => (
                         <li
                           key={index}
                           className="flex items-start gap-2 text-sm text-gray-600"
@@ -617,8 +617,8 @@ const MyJobs = () => {
                             />
                           </svg>
                           {req}
-                        </li>
-                      ))}
+                        </li> */}
+                      {/* ))} */}
                     </ul>
                   </Card>
                 </div>
