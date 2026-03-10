@@ -28,6 +28,9 @@ const parsedResumeSchema = new mongoose.Schema(
 
     rawTextLength: Number,
 
+    // Full parsed resume JSON (as returned by the LLM parser)
+    parsed: { type: mongoose.Schema.Types.Mixed },
+
     parserVersion: {
       type: String,
       default: "ai-parser-v1",

@@ -18,28 +18,17 @@ const loadModel = async () => {
 /* ------------ Cosine Similarity ------------ */
 const cosineSimilarity = (a, b) => {
   const dot = a.reduce((sum, val, i) => sum + val * b[i], 0);
+
   const magA = Math.sqrt(a.reduce((sum, val) => sum + val * val, 0));
   const magB = Math.sqrt(b.reduce((sum, val) => sum + val * val, 0));
+
   if (magA === 0 || magB === 0) return 0;
+
   return dot / (magA * magB);
 };
 
-/* ------------ Extract Required Skills from JD ------------ */
-const extractSkills = (jobDescription) => {
-  const commonSkills = [
-    "react",
-    "node",
-    "mongodb",
-    "express",
-    "rest",
-    "javascript",
-    "mern"
-  ];
-
-  const jd = jobDescription.toLowerCase();
-
-  return commonSkills.filter(skill => jd.includes(skill));
-};
+/* ------------ Normalize Skill ------------ */
+const normalize = (s) => s.toLowerCase().replace(".js", "").trim();
 
 /* ------------ Experience Score ------------ */
 const calculateExperienceScore = (resumeText) => {
@@ -52,13 +41,37 @@ const calculateExperienceScore = (resumeText) => {
   if (text.includes("experience")) score += 0.3;
   if (text.includes("worked")) score += 0.3;
 
-  return Math.min(score, 1); 
+  return Math.min(score, 1);
+};
+
+/* ------------ Skill Matching (Structured) ------------ */
+const calculateSkillScore = (jobSkills, resumeSkills) => {
+
+  if (!jobSkills || jobSkills.length === 0) return 0;
+
+  const normalizedResume = resumeSkills.map(normalize);
+  const normalizedJob = jobSkills.map(normalize);
+
+  let matched = 0;
+
+  normalizedJob.forEach((skill) => {
+    const found = normalizedResume.find((r) => r.includes(skill));
+    if (found) matched++;
+  });
+
+  return matched / normalizedJob.length;
 };
 
 /* ------------ Main Ranking Function ------------ */
-export const rankResumes = async (resumes, jobDescription) => {
+export const rankResumes = async (
+  resumes,
+  jobDescription,
+  jobSkills = []
+) => {
+
   const model = await loadModel();
 
+  /* ---------- Embed Job Description ---------- */
   const jdEmbedding = await model(jobDescription, {
     pooling: "mean",
     normalize: true,
@@ -66,11 +79,11 @@ export const rankResumes = async (resumes, jobDescription) => {
 
   const jdVector = jdEmbedding.data;
 
-  const requiredSkills = extractSkills(jobDescription);
-
   const results = [];
 
   for (const resume of resumes) {
+
+    /* ---------- Resume Embedding ---------- */
     const resumeEmbedding = await model(resume.text, {
       pooling: "mean",
       normalize: true,
@@ -78,33 +91,31 @@ export const rankResumes = async (resumes, jobDescription) => {
 
     const resumeVector = resumeEmbedding.data;
 
+    /* ---------- Semantic Similarity ---------- */
     const similarity = cosineSimilarity(jdVector, resumeVector);
 
-    // -------- Skill Match Score --------
-    const resumeText = resume.text.toLowerCase();
-    let matchedSkills = 0;
+    /* ---------- Structured Skill Matching ---------- */
+    const skillScore = calculateSkillScore(
+      jobSkills,
+      resume.skills || []
+    );
 
-    requiredSkills.forEach(skill => {
-      if (resumeText.includes(skill)) {
-        matchedSkills++;
-      }
-    });
-
-    const skillScore =
-      requiredSkills.length > 0
-        ? matchedSkills / requiredSkills.length
-        : 0;
-
-    // -------- Experience Score --------
+    /* ---------- Experience Score ---------- */
     const experienceScore = calculateExperienceScore(resume.text);
 
-    // -------- Final Weighted Score --------
+    /* ---------- Final Score ---------- */
     const finalScore =
-      similarity * 0.5 +   // 50% semantic
-      skillScore * 0.3 +   // 30% skills
-      experienceScore * 0.2; // 20% experience
+      similarity * 0.4 +
+      skillScore * 0.4 +
+      experienceScore * 0.2;
 
     const score = Math.round(finalScore * 100);
+
+    console.log("----- Candidate Score -----");
+    console.log("Similarity:", similarity);
+    console.log("Skill Score:", skillScore);
+    console.log("Experience Score:", experienceScore);
+    console.log("Final Score:", score);
 
     results.push({
       ...resume,

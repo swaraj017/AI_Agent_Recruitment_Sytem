@@ -1,87 +1,89 @@
-import fs from "fs";
+import { randomUUID } from "crypto";
 import Job from "../models/Job.js";
 import JobSeeker from "../models/JobSeeker.js";
 import JobApplication from "../models/JobApplication.js";
-import ParsedResume from "../models/ParsedResume.js";
-import { extractTextFromFile } from "../controllers/resumeController.js";
+import { getConfirmChannel } from "../services/queue.js";
 
 export const applyToJob = async (req, res) => {
   try {
     const { jobId } = req.body;
-    
     console.log("body:", req.body);
     console.log("file:", req.file);
 
-
-
+    // 0) Basic validations
     if (!jobId) {
       return res.status(400).json({ message: "Job ID is required" });
     }
-
     if (!req.file) {
       return res.status(400).json({ message: "Resume file is required" });
     }
 
-    // 1. Check Job Exists
+    // 1) Check job exists
     const job = await Job.findById(jobId);
     if (!job) {
-      fs.unlinkSync(req.file.path);
+      if (req.file?.path) { try { fs.unlinkSync(req.file.path); } catch { } }
       return res.status(404).json({ message: "Job not found" });
     }
 
-    // 2. Get Job Seeker
-    const jobSeeker = await JobSeeker.findOne({
-      authUserId: req.user._id,
-    });
-
+    // 2) Get job seeker via auth user
+    //req.user._id
+    const jobSeeker = await JobSeeker.findOne({ authUserId: "69945343309b1698a2d64417" });
     if (!jobSeeker) {
-      fs.unlinkSync(req.file.path);
+      if (req.file?.path) { try { fs.unlinkSync(req.file.path); } catch { } }
       return res.status(404).json({ message: "Job seeker profile not found" });
     }
 
-    // 3. Prevent Duplicate Apply
-    const existingApplication = await JobApplication.findOne({
-      jobId,
-      jobSeekerId: jobSeeker._id,
-    });
-
+    // 3) Prevent duplicate apply
+    const existingApplication = await JobApplication.findOne({ jobId, jobSeekerId: jobSeeker._id });
     if (existingApplication) {
-      fs.unlinkSync(req.file.path);
-      return res.status(409).json({
-        message: "You already applied to this job",
-      });
+      if (req.file?.path) { try { fs.unlinkSync(req.file.path); } catch { } }
+      return res.status(409).json({ message: "You already applied to this job" });
     }
 
-    // 4. Extract Resume Text
-    const resumeText = await extractTextFromFile(req.file);
-
-    // 5. Create Job Application
+    // Create Job Application in queued state
     const application = await JobApplication.create({
       jobId,
       jobSeekerId: jobSeeker._id,
-      status: "applied",
+      status: "queued",
     });
 
-    // 6. Store Parsed Resume
-    await ParsedResume.create({
-      jobApplicationId: application._id,
-      jobSeekerId: jobSeeker._id,
-      rawTextLength: resumeText.length,
-    });
+    // Publish to RabbitMQ (durable)
+    const ch = await getConfirmChannel();
+    const queueName = process.env.QUEUE_RESUME_PARSE || 'resumes.parse';
+    const requestId = randomUUID();
+    const payload = {
+      requestId,
+      jobApplicationId: application._id.toString(),
+      jobId: job._id.toString(),
+      jobSeekerId: jobSeeker._id.toString(),
+      jobTitle: job.title,
+      jobDescription: job.description || "",
+      upload: {
+        filename: req.file.originalname,
+        mimetype: req.file.mimetype,
+        bufferBase64: Buffer.from(req.file.buffer).toString('base64'),
+      },
+      enqueuedAt: new Date().toISOString(),
+    };
 
-    // 7. Delete Uploaded File
-    fs.unlinkSync(req.file.path);
+    await new Promise((resolve, reject) => {
+      ch.sendToQueue(queueName, Buffer.from(JSON.stringify(payload)), {
+        persistent: true,
+        contentType: 'application/json',
+        correlationId: requestId,
+      }, (err, ok) => err ? reject(err) : resolve(ok));
+    });
 
     return res.status(201).json({
       success: true,
       message: "Application submitted successfully",
+      job: { id: job._id, title: job.title },
       applicationId: application._id,
+      status: "queued",
     });
 
   } catch (error) {
-    if (req.file?.path) {
-      fs.unlinkSync(req.file.path);
-    }
+    if (req.file?.path) { try { fs.unlinkSync(req.file.path); } catch { } }
 
     return res.status(500).json({
       message: "Failed to apply",
