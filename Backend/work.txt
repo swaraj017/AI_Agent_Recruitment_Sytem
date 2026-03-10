@@ -1,0 +1,86 @@
+Summary of what actually happen when user apply to job 
+ 
+
+- Backend-only resume parsing
+  - Implemented parseResume service using OpenRouter (model: openai/gpt-3.5-turbo via OpenRouter) with strict JSON schema, normalization, timeout, and safe fallback; reads OPENROUTER_API_KEY from .env.
+  - Switched Multer to memoryStorage; updated extractTextFromFile to handle PDF (pdfjs), DOCX (mammoth), and TXT from buffers; removed disk upload dependency and guarded file cleanup.
+
+- Apply flow (synchronous v1)
+  - Updated applyToJob to validate jobId, resume, job existence, jobSeeker existence, and duplicate applications.
+  - Extracted text, parsed via LLM, created JobApplication, and stored ParsedResume (extractedSkills, experienceYears, rawTextLength, full parsed JSON); returned job + parsed payload.
+
+- Persist full parsed resume
+  - Extended ParsedResume schema with a parsed (Mixed) field to store the complete LLM output alongside metadata.
+
+- Queue-based architecture (asynchronous v2)
+  - Added RabbitMQ integration (amqplib): confirm publisher channel and consumer channel with prefetch(1); durable queue resumes.parse.
+  - Producer: applyToJob now creates JobApplication with status queued and publishes a message containing ids, job description, and the resume buffer (base64 + mimetype/filename). Returns 201 success with status queued.
+  - Consumer worker (parseResumeWorker): rebuilds file from base64, extracts text, parses via LLM, ranks via rankResumes, writes ParsedResume, and updates JobApplication status to applied if score >= FIT_THRESHOLD else rejected. Idempotent on jobApplicationId.
+
+- Ranking
+  - rankResumes uses Xenova/all-MiniLM-L6-v2 embeddings + weighted scoring: 50% semantic, 30% skills, 20% experience; FIT_THRESHOLD from env (default 65). Recommendation: start around 45 for better recall and expand the skills list.
+
+- RabbitMQ setup (Docker)
+  - Ran rabbitmq:3.13-management with ports 5672 (AMQP) and 15672 (Management UI). UI at http://localhost:15672 (guest/guest). RABBITMQ_URL=amqp://guest:guest@localhost:5672.
+  
+  ~docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 -e RABBITMQ_DEFAULT_USER=guest -e RABBITMQ_DEFAULT_PASS=guest rabbitmq:3-management
+
+- Testing and calibration
+  - Verified memory upload field name (resume); resolved Multer errors.
+  - Observed worker processing logs, score/isFit outcomes, and DB updates.
+  - Suggested threshold tuning (e.g., FIT_THRESHOLD=45) and expanding skill extraction to improve pass rates.
+
+
+WORKER DOES -:
+
+Consume resume from RabbitMQ
+
+Extract resume text
+
+Parse resume using LLM
+
+Rank against job description
+
+Store ParsedResume
+
+Update JobApplication status
+
+If candidate score ≥ FIT_THRESHOLD
+
+Generate unique token
+
+Create InterviewSession with interview link
+
+
+
+
+
+
+How i increased ATS ranking accuracy:
+
+Structured Resume Parsing
+Utilized AI-parsed fields (candidate.skills, projects.techStack) instead of relying solely on raw resume text.
+
+Semantic Embedding Matching
+Applied transformer embeddings using Xenova/all-MiniLM-L6-v2 to compute semantic similarity between the job description and resume content.
+
+Skill Normalization Pipeline
+Implemented normalization to standardize skill variants (e.g., node.js → node, html5 → html) to improve matching consistency.
+
+Structured Skill Comparison
+Replaced keyword scanning with direct comparison between job.skills and resume.skills, reducing false negatives.
+
+Multi-Factor Weighted Scoring Model
+Introduced a composite scoring algorithm:
+
+40% Semantic similarity
+
+40% Skill match ratio
+
+20% Experience signal extraction
+
+Model Reuse Optimization
+Loaded the embedding model once per worker process, reducing inference latency and improving throughput.
+
+Hybrid ATS Evaluation Strategy
+Combined NLP semantic analysis + rule-based skill matching + heuristic experience scoring for more robust candidate evaluation.
