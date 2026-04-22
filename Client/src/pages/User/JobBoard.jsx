@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sidebar, Header } from "../../components/layout";
 import { Card, Badge, Button, Input, Select } from "../../components/common";
-import api from "../../services/api";
 import { timeAgo } from "../../utils/util";
+import { useUserJobs } from "../../hooks/useUserJobs";
 
 // Navigation items for User/Job Seeker
 const navItems = [
@@ -15,82 +15,7 @@ const navItems = [
   { path: "/user/settings", label: "Settings" },
 ];
 
-// Mock job data
-const mockJobs = [
-  {
-    id: 1,
-    title: "UX Designer",
-    company: "Dropbox",
-    location: "Warszawa",
-    salary: "8.8 - 13.7k PLN",
-    type: "Full-time",
-    workMode: "Remote",
-    postedAt: "2 days ago",
-    description: "We are looking for an experienced UX Designer to join our team...",
-    skills: ["Figma", "Sketch", "User Research", "Prototyping"],
-  },
-  {
-    id: 2,
-    title: "Product Designer",
-    company: "Twitch",
-    location: "Wrocław",
-    salary: "8.2 - 13.5k PLN",
-    type: "Full-time",
-    workMode: "Remote",
-    postedAt: "2 days ago",
-    description: "Join our design team to create amazing streaming experiences...",
-    skills: ["UI Design", "Design Systems", "Figma"],
-  },
-  {
-    id: 3,
-    title: "Senior Frontend Developer",
-    company: "Google",
-    location: "Warszawa",
-    salary: "15.5 - 22.5k PLN",
-    type: "Full-time",
-    workMode: "Hybrid",
-    postedAt: "3 days ago",
-    description: "Work on cutting-edge web applications at scale...",
-    skills: ["React", "TypeScript", "Node.js", "GraphQL"],
-  },
-  {
-    id: 4,
-    title: "Motion Designer",
-    company: "Adobe",
-    location: "Remote",
-    salary: "7.2 - 12.5k PLN",
-    type: "Contract",
-    workMode: "Remote",
-    postedAt: "3 days ago",
-    description: "Create stunning motion graphics for our products...",
-    skills: ["After Effects", "Cinema 4D", "Illustration"],
-  },
-  {
-    id: 5,
-    title: "Backend Developer",
-    company: "Meta",
-    location: "London",
-    salary: "18.0 - 25.5k PLN",
-    type: "Full-time",
-    workMode: "On-site",
-    postedAt: "1 day ago",
-    description: "Build scalable backend systems for billions of users...",
-    skills: ["Python", "Java", "Distributed Systems", "AWS"],
-  },
-  {
-    id: 6,
-    title: "Data Scientist",
-    company: "Spotify",
-    location: "Stockholm",
-    salary: "14.0 - 20.0k PLN",
-    type: "Full-time",
-    workMode: "Hybrid",
-    postedAt: "4 days ago",
-    description: "Use data to improve music recommendations...",
-    skills: ["Python", "Machine Learning", "SQL", "TensorFlow"],
-  },
-];
-
+// Hook handles data fetching
 const JobBoard = () => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -98,26 +23,8 @@ const JobBoard = () => {
   const [location, setLocation] = useState("all");
   const [jobType, setJobType] = useState("all");
   const [workMode, setWorkMode] = useState("all");
-  const [jobs, setJobs] = useState([]);
-  
 
-  // Fetch jobs from backend on component mount
-  useEffect(() => {
-     const fethcJobs = async () => {
-      try{
-      const response = await api.get("/user/jobs")
-      if(response.data.success){
-        setJobs(response.data.jobs);
-        console.log("fetched jobs", response.data.jobs);
-      }
-      }catch(e){
-         console.log("something went wrong while fetching jobs", e); 
-      }
-     }
-     fethcJobs();
-},[]); 
-
-
+  const { jobs, loading } = useUserJobs();
 
   const user = {
     fullName: "Anne Douglas",
@@ -191,9 +98,8 @@ const JobBoard = () => {
       />
 
       <div
-        className={`flex-1 flex flex-col transition-all duration-200 ${
-          sidebarOpen ? "lg:ml-56" : "lg:ml-16"
-        }`}
+        className={`flex-1 flex flex-col transition-all duration-200 ${sidebarOpen ? "lg:ml-56" : "lg:ml-16"
+          }`}
       >
         <Header
           user={user}
@@ -206,7 +112,7 @@ const JobBoard = () => {
           <div className="mb-6">
             <h1 className="text-xl font-semibold text-foreground">Job Board</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Find your dream job from {mockJobs.length}+ openings
+              Find your dream job from {jobs?.length || 0}+ openings
             </p>
           </div>
 

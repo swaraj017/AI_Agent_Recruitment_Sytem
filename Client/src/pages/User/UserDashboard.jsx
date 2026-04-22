@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Sidebar, Header } from "../../components/layout";
 import { Card, Badge, Button, Input, Select } from "../../components/common";
 import { StatsCard } from "../../components/job";
+import { useUserJobs } from "../../hooks/useUserJobs";
+import { timeAgo } from "../../utils/util";
 
 // Navigation items for User/Job Seeker - simplified (icons handled by Sidebar)
 const navItems = [
@@ -13,49 +15,7 @@ const navItems = [
   { path: "/user/settings", label: "Settings" },
 ];
 
-// Mock job data
-const mockJobs = [
-  {
-    id: 1,
-    title: "UX Designer",
-    company: "Dropbox",
-    location: "Warszawa",
-    salary: "8.8 - 13.7k PLN",
-    tags: ["Remote", "Full-time"],
-    postedAt: "2 days ago",
-    type: "Full-time",
-  },
-  {
-    id: 2,
-    title: "Product Designer",
-    company: "Twitch",
-    location: "Wrocław",
-    salary: "8.2 - 13.5k PLN",
-    tags: ["Remote", "Full-time"],
-    postedAt: "2 days ago",
-    type: "Full-time",
-  },
-  {
-    id: 3,
-    title: "UX/UI Designer",
-    company: "Google",
-    location: "Warszawa",
-    salary: "7.5 - 12.5k PLN",
-    tags: ["Hybrid", "Full-time"],
-    postedAt: "3 days ago",
-    type: "Full-time",
-  },
-  {
-    id: 4,
-    title: "Motion Designer",
-    company: "Adobe",
-    location: "Remote",
-    salary: "7.2 - 12.5k PLN",
-    tags: ["Remote", "Contract"],
-    postedAt: "3 days ago",
-    type: "Contract",
-  },
-];
+
 
 // Mock applications
 const mockApplications = [
@@ -105,6 +65,7 @@ const mockInterviews = [
 const UserDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const { jobs, loading } = useUserJobs();
 
   // Mock user - in real app, get from context/auth
   const user = {
@@ -225,9 +186,9 @@ const UserDashboard = () => {
                 </div>
 
                 <div className="space-y-3">
-                  {mockJobs.map((job) => (
+                  {(jobs || []).slice(0, 4).map((job) => (
                     <div
-                      key={job.id}
+                      key={job._id || job.id}
                       className="flex items-start gap-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors cursor-pointer group"
                     >
                       {/* Company Logo */}
@@ -241,7 +202,7 @@ const UserDashboard = () => {
                           <h3 className="font-medium text-foreground group-hover:text-brand transition-colors text-sm">
                             {job.title}
                           </h3>
-                          {job.tags.slice(0, 2).map((tag, idx) => (
+                          {[job.jobType, job.location].filter(Boolean).slice(0, 2).map((tag, idx) => (
                             <Badge key={idx} variant="outline" className="text-[10px]">
                               {tag}
                             </Badge>
@@ -254,8 +215,8 @@ const UserDashboard = () => {
 
                       {/* Salary & Time */}
                       <div className="text-right flex-shrink-0">
-                        <p className="text-sm font-medium text-foreground">{job.salary}</p>
-                        <p className="text-xs text-muted-foreground">{job.postedAt}</p>
+                        <p className="text-sm font-medium text-foreground">{job.salary ? `${job.salary.min}k - ${job.salary.max}k ${job.salary.currency}` : "Not specified"}</p>
+                        <p className="text-xs text-muted-foreground">{job.createdAt ? timeAgo(job.createdAt) : ""}</p>
                       </div>
                     </div>
                   ))}

@@ -9,9 +9,8 @@ import {
 } from "../../components/common";
 import { HRJobCard, CandidateCard, StatsCard } from "../../components/job";
 import { hrNavItems } from "./hrNavItems";
-import api from "../../services/api";
 import { useHrJobs } from "../../hooks/useHrJobs";
-import { timeAgo } from "../../utils/util";
+import { formatDate, timeAgo } from "../../utils/util";
 
 // Mock jobs with detailed data
 const mockJobs = [
@@ -391,21 +390,19 @@ const MyJobs = () => {
                   <div className="flex bg-muted rounded-lg p-1">
                     <button
                       onClick={() => setActiveTab("active")}
-                      className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
-                        activeTab === "active"
-                          ? "bg-card text-foreground shadow-sm"
-                          : "text-muted-foreground hover:text-foreground"
-                      }`}
+                      className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${activeTab === "active"
+                        ? "bg-card text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                        }`}
                     >
                       Active Jobs ({activeJobs.length})
                     </button>
                     <button
                       onClick={() => setActiveTab("closed")}
-                      className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
-                        activeTab === "closed"
-                          ? "bg-card text-foreground shadow-sm"
-                          : "text-muted-foreground hover:text-foreground"
-                      }`}
+                      className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${activeTab === "closed"
+                        ? "bg-card text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                        }`}
                     >
                       Closed Jobs ({closedJobs.length})
                     </button>
@@ -443,7 +440,7 @@ const MyJobs = () => {
                               {job.status}
                             </Badge>
                           </div>
-                            
+
                           <p className="text-sm text-muted-foreground mb-4">{`${job.salary.min}-${job.salary.max} ${job.salary.currency}`}</p>
 
                           {/* Stats */}
@@ -515,7 +512,7 @@ const MyJobs = () => {
               </>
             )}
 
-        
+
 
             {/* Detail View */}
             {viewMode === "detail" && selectedJob && (
@@ -556,6 +553,7 @@ const MyJobs = () => {
                   </Card>
 
                   {/* Job Details */}
+                  {console.log(selectedJob)}
                   <Card>
                     <h3 className="font-semibold text-gray-900 mb-3">
                       Job Details
@@ -564,19 +562,19 @@ const MyJobs = () => {
                       <div className="flex justify-between">
                         <span className="text-gray-500">Salary</span>
                         <span className="font-medium">
-                          {JSON.toString(selectedJob.salary)}
+                          {`${selectedJob.salary.min}-${selectedJob.salary.max} ${selectedJob.salary.currency}`}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-500">Posted</span>
                         <span className="font-medium">
-                          {selectedJob.createdAt}
+                          {timeAgo(selectedJob.createdAt)}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-500">Deadline</span>
                         <span className="font-medium">
-                          {selectedJob.deadline}
+                          {formatDate(selectedJob.deadline)}
                         </span>
                       </div>
                       <div className="flex justify-between">
@@ -816,22 +814,20 @@ const MyJobs = () => {
                           {topCandidates.map((candidate, index) => (
                             <div
                               key={candidate.id}
-                              className={`flex items-center gap-4 p-4 rounded-xl ${
-                                index === 0
-                                  ? "bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200"
-                                  : "bg-gray-50"
-                              }`}
+                              className={`flex items-center gap-4 p-4 rounded-xl ${index === 0
+                                ? "bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200"
+                                : "bg-gray-50"
+                                }`}
                             >
                               <div
-                                className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
-                                  index === 0
-                                    ? "bg-yellow-500 text-white"
-                                    : index === 1
-                                      ? "bg-gray-400 text-white"
-                                      : index === 2
-                                        ? "bg-orange-400 text-white"
-                                        : "bg-gray-300 text-gray-600"
-                                }`}
+                                className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${index === 0
+                                  ? "bg-yellow-500 text-white"
+                                  : index === 1
+                                    ? "bg-gray-400 text-white"
+                                    : index === 2
+                                      ? "bg-orange-400 text-white"
+                                      : "bg-gray-300 text-gray-600"
+                                  }`}
                               >
                                 {index + 1}
                               </div>

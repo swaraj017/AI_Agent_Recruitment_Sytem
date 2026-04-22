@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Sidebar, Header } from "../../components/layout";
 import { Card, Badge, Button, Input } from "../../components/common";
 import { HRJobCard, CandidateCard, StatsCard } from "../../components/job";
+import { useHrJobs } from "../../hooks/useHrJobs";
 
 // Navigation items for HR - simplified with less icons
 const navItems = [
@@ -11,54 +12,6 @@ const navItems = [
   { path: "/hr/candidates", label: "Candidates" },
   { path: "/hr/interviews", label: "Interviews" },
   { path: "/hr/settings", label: "Settings" },
-];
-
-// Mock data for jobs
-const mockJobs = [
-  {
-    id: 1,
-    title: "Senior Frontend Developer",
-    location: "Remote",
-    type: "Full-time",
-    salary: "12k - 18k PLN",
-    postedAt: "2 days ago",
-    deadline: "Feb 28, 2026",
-    status: "active",
-    stats: { total: 45, shortlisted: 8, interviewed: 3, rejected: 12 },
-  },
-  {
-    id: 2,
-    title: "UX Designer",
-    location: "Warsaw",
-    type: "Full-time",
-    salary: "8k - 12k PLN",
-    postedAt: "5 days ago",
-    deadline: "Mar 15, 2026",
-    status: "active",
-    stats: { total: 32, shortlisted: 5, interviewed: 2, rejected: 8 },
-  },
-  {
-    id: 3,
-    title: "Product Manager",
-    location: "Hybrid",
-    type: "Full-time",
-    salary: "15k - 22k PLN",
-    postedAt: "1 week ago",
-    deadline: "Feb 20, 2026",
-    status: "active",
-    stats: { total: 28, shortlisted: 6, interviewed: 4, rejected: 5 },
-  },
-  {
-    id: 4,
-    title: "Backend Developer",
-    location: "Remote",
-    type: "Contract",
-    salary: "100 - 150 PLN/h",
-    postedAt: "2 weeks ago",
-    deadline: "Jan 30, 2026",
-    status: "closed",
-    stats: { total: 52, shortlisted: 10, interviewed: 5, rejected: 30 },
-  },
 ];
 
 // Mock candidates data
@@ -153,11 +106,28 @@ const mockCandidates = {
 };
 
 const HRDashboard = () => {
+  const { jobs, loading, error } = useHrJobs();
   const [selectedJob, setSelectedJob] = useState(null);
   const [activeTab, setActiveTab] = useState("active");
   const [candidateFilter, setCandidateFilter] = useState("all");
   const [searchCandidate, setSearchCandidate] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  // Map API jobs to UI format
+  const formattedJobs = (jobs || []).map(j => ({
+    ...j,
+    id: j._id,
+    type: j.jobType || "Full-time",
+    salary: j.salary && j.salary.min ? `${j.salary.min} - ${j.salary.max} ${j.salary.currency || 'PLN'}` : "Not specified",
+    postedAt: new Date(j.createdAt).toLocaleDateString(),
+    deadline: j.deadline ? new Date(j.deadline).toLocaleDateString() : "No deadline",
+    stats: {
+      total: j.total || 0,
+      shortlisted: j.shortlisted || 0,
+      interviewed: j.interviewed || 0,
+      rejected: 0
+    }
+  }));
 
   // Mock user
   const user = {
@@ -166,8 +136,8 @@ const HRDashboard = () => {
     role: "HR",
   };
 
-  const activeJobs = mockJobs.filter((j) => j.status === "active");
-  const closedJobs = mockJobs.filter((j) => j.status === "closed");
+  const activeJobs = formattedJobs.filter((j) => j.status === "active" || !j.status);
+  const closedJobs = formattedJobs.filter((j) => j.status === "closed");
 
   const displayedJobs = activeTab === "active" ? activeJobs : closedJobs;
 
@@ -188,9 +158,9 @@ const HRDashboard = () => {
   );
 
   const totalStats = {
-    totalApplications: mockJobs.reduce((acc, j) => acc + j.stats.total, 0),
-    totalShortlisted: mockJobs.reduce((acc, j) => acc + j.stats.shortlisted, 0),
-    totalInterviewed: mockJobs.reduce((acc, j) => acc + j.stats.interviewed, 0),
+    totalApplications: formattedJobs.reduce((acc, j) => acc + (j.stats?.total || 0), 0),
+    totalShortlisted: formattedJobs.reduce((acc, j) => acc + (j.stats?.shortlisted || 0), 0),
+    totalInterviewed: formattedJobs.reduce((acc, j) => acc + (j.stats?.interviewed || 0), 0),
     activeJobs: activeJobs.length,
   };
 
@@ -270,21 +240,19 @@ const HRDashboard = () => {
                   <div className="flex bg-muted rounded-md p-0.5">
                     <button
                       onClick={() => setActiveTab("active")}
-                      className={`px-3 py-1 text-sm font-medium rounded transition-colors ${
-                        activeTab === "active"
+                      className={`px-3 py-1 text-sm font-medium rounded transition-colors ${activeTab === "active"
                           ? "bg-card text-foreground shadow-sm"
                           : "text-muted-foreground hover:text-foreground"
-                      }`}
+                        }`}
                     >
-                      Active ({activeJobs.length})
+                       ({activeJobs.length})
                     </button>
                     <button
                       onClick={() => setActiveTab("closed")}
-                      className={`px-3 py-1 text-sm font-medium rounded transition-colors ${
-                        activeTab === "closed"
+                      className={`px-3 py-1 text-sm font-medium rounded transition-colors ${activeTab === "closed"
                           ? "bg-card text-foreground shadow-sm"
                           : "text-muted-foreground hover:text-foreground"
-                      }`}
+                        }`}
                     >
                       Closed ({closedJobs.length})
                     </button>

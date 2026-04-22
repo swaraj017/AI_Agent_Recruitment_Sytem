@@ -19,7 +19,7 @@ export const useHrJobs = () => {
     };
 
     fetchJobs();
-  }, []); // ← empty array = runs once
+  }, []);
 
   return { jobs, loading, error };
 };
