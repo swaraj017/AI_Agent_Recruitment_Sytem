@@ -298,27 +298,21 @@ const JobDetails = () => {
 
     console.log("formData", formData.get("resume"));
 
-    const response = await axios.post("http://localhost:8000/api/user/apply", formData, {
+    const response = await axios.post(`${import.meta.env.VITE_API_URL}/user/apply`, formData, {
       headers:{
         "Content-Type": "multipart/form-data",
         Authorization: `Bearer ${token}`
 
       }})
-      console.log("Application response", response.data);
 
     setIsSubmitting(false);
     setSubmitted(true);
-
 
     }catch(err){
        console.error("Failed to submit application", err);
     }
 
    
-
-  
-  
-  
     // Close modal after showing success
     setTimeout(() => {
       setShowApplyModal(false);
